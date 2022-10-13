@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "palera1n"
+version = "2.0.0"
+description = "iOS 15.0-15.3.1 tethered checkm8 \"jailbreak\""
+authors = ["Nebula <me@itsnebula.net>"]
+license = "BSD-3-Clause"
+readme = "README.md"
+repository = "https://github.com/palera1n/palera1n"
+keywords = ["python", "ios", "ios15", "jailbreak", "patcher"]
+classifiers = [
+    "Natural Language :: English",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Topic :: Utilities"
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyimg4 = "^0.6.2"
+pymobiledevice3 = "^1.29.3"
+remotezip = "^0.9.4"
+
+[tool.poetry.scripts]
+palera1n = 'palera1n.__main__:main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
