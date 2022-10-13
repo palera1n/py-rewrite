@@ -1,6 +1,6 @@
 <h1 align="center">
   palera1n
-</p>
+</h1>
 
 <p align="center">
   <a href="#">
