@@ -3,7 +3,12 @@ import palera1n
 from . import utils
 
 
-def main(argv=None) -> None:
+def main(argv=None, in_package=None) -> None:
+    if argv is None:
+        in_package = True
+
+    in_package = False if in_package is None else in_package
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true',
                         help="shows some debug info, only useful for testing")
@@ -17,7 +22,7 @@ def main(argv=None) -> None:
                         help='show current version and exit')
     args = parser.parse_args()
 
-    pr = palera1n.palera1n(args)
+    pr = palera1n.palera1n(in_package, args)
     pr.main()
 
 

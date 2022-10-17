@@ -118,4 +118,12 @@ def device_info(type: str, string: str) -> str:
         lockdown = LockdownClient(client_name="palera1n", usbmux_connection_type="USB")
         return lockdown.all_values[string]
     elif type == "recovery":
-        get_storage_dir() / "irecovery"
+        status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
+        return output
+
+def check_pwned() -> tuple[bool, str]:
+    pwned = device_info("recovery", "PWND")
+    if pwned == "":
+        return False, None
+    else:
+        return True, pwned
