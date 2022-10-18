@@ -6,7 +6,7 @@ import tempfile
 from . import logger
 from . import utils
 from .logger import colors
-from .deps import iBootPatcher, Gaster
+from .deps import iBootPatcher, Gaster, irecovery
 
 
 class palera1n:
@@ -50,7 +50,6 @@ class palera1n:
         
         # Dependency check
         logger.log("Checking for dependencies...")
-        
         print("Checking for iBoot64Patcher")
         self.ibootpatcher = utils.cmd_in_path('iBoot64Patcher')
         if self.ibootpatcher:
@@ -67,10 +66,20 @@ class palera1n:
             logger.debug("gaster not found in path", self.args.debug)
             Gaster(self.data_dir, self.args).download()
         
+        print("Checking for irecovery")
+        self.irecovery = utils.cmd_in_path('irecovery')
+        if self.irecovery:
+            logger.debug("irecovery found!", self.args.debug)
+        else:
+            logger.debug("irecovery not found in path", self.args.debug)
+            irecovery(self.data_dir, self.args).download()
+        
+        # Get device info, then debug log them
         logger.log("Getting device info")
-        self.cpid = utils.device_info("recovery", "CPID")
-        self.model = utils.device_info("recovery", "MODEL")
-        self.deviceid = utils.device_info("recovery", "PRODUCT")
+        self.cpid = utils.device_info("recovery", "CPID", self.data_dir, self.args)
+        self.model = utils.device_info("recovery", "MODEL", self.data_dir, self.args)
+        self.deviceid = utils.device_info("recovery", "PRODUCT", self.data_dir, self.args)
+        logger.debug(f"CPID: {self.cpid}, MODEL: {self.model}, ID: {self.deviceid}", self.args.debug)
         
         if utils.check_pwned() is False:
             logger.log("Pwning device")

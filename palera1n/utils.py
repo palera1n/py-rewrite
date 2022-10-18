@@ -15,6 +15,7 @@ import pkg_resources
 from pymobiledevice3.lockdown import LockdownClient
 
 from . import logger
+from .deps import irecovery
 
 
 def is_macos() -> bool:
@@ -112,14 +113,20 @@ def check_state(type: str) -> None:
                 logger.error("Device isn't in DFU mode, please rerun the script and try again")
                 sys.exit(1)
 
-def device_info(type: str, string: str) -> str:
+def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
     """Get info about the device"""
     if type == "normal":
         lockdown = LockdownClient(client_name="palera1n", usbmux_connection_type="USB")
         return lockdown.all_values[string]
     elif type == "recovery":
-        status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
-        return output
+        #status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
+        code, output = irecovery(data_dir, args).run("info")
+        
+        for line in output.split('\n'):
+            if string in line:
+                info = line.replace(f"{string}: ", "")
+                
+        return info
 
 def check_pwned() -> tuple[bool, str]:
     pwned = device_info("recovery", "PWND")
