@@ -25,7 +25,7 @@ class iBootPatcher:
         self.exists = False
 
     @property
-    def remote_filename(self) -> tuple[str, None]:
+    def remote_filename(self) -> Union[str, None]:
         # Get remote iBoot64Patcher name based on the platform
         if utils.is_linux() and platform.machine() == "x86_64":
             return "iBoot64Patcher-Linux-x86_64-RELEASE"
@@ -38,7 +38,7 @@ class iBootPatcher:
         # Check if iBoot64Patcher is present in the data dir
         return (self.data_dir / "iBoot64Patcher").exists()
 
-    def path(self) -> tuple[Path, str, None]:
+    def path(self) -> Union[Path, str, None]:
         # Check if iBoot64Patcher is present in the data dir
         if self.exists_in_data_dir():
             return (self.data_dir / "iBoot64Patcher")
@@ -179,7 +179,7 @@ class Gaster:
         self.exists = False
 
     @property
-    def remote_filename(self) -> tuple[str, None]:
+    def remote_filename(self) -> Union[str, None]:
         # Get remote gaster name based on the platform
         if utils.is_linux() and platform.machine() == "x86_64":
             return "gaster-Linux"
@@ -192,7 +192,7 @@ class Gaster:
         # Check if gaster is present in the data dir
         return (self.data_dir / "gaster").exists()
 
-    def path(self) -> tuple[Path, str, None]:
+    def path(self) -> Union[Path, str, None]:
         # Check if gaster is present in the data dir
         if self.exists_in_data_dir():
             return (self.data_dir / "gaster")
@@ -347,20 +347,20 @@ class irecovery:
         self.exists = False
 
     @property
-    def remote_filename(self) -> tuple[str, None]:
+    def remote_filename(self) -> Union[str, None]:
         # Get remote irecovery name based on the platform
         if utils.is_linux() and platform.machine() == "x86_64":
-            return "libirecovery-latest_x86_64-linux-gnu"
+            return "libirecovery-static_Linux"
         elif utils.is_macos() and platform.machine() == "x86_64":
-            return "libirecovery-latest_macOS"
+            return "libirecovery-static_Darwin"
         elif utils.is_macos() and platform.machine() == "arm64":
-            return "libirecovery-latest_macOS"
+            return "libirecovery-static_Darwin"
 
     def exists_in_data_dir(self) -> bool:
         # Check if irecovery is present in the data dir
         return (self.data_dir / "irecovery").exists()
 
-    def path(self) -> tuple[Path, str, None]:
+    def path(self) -> Union[Path, str, None]:
         # Check if irecovery is present in the data dir
         if self.exists_in_data_dir():
             return (self.data_dir / "irecovery")
@@ -376,15 +376,21 @@ class irecovery:
         with zipfile.ZipFile("irecovery.zip", 'r') as f:
             f.extractall(self.data_dir)
         Path("irecovery.zip").unlink()
+        
+        """# Now, we unzip the tar
+        with tarfile.open("libirecovery.tar") as f:
+            with(self.data_dir) as path:
+                f.extractall(path)
+        Path("libirecovery.tar").unlink()"""
 
         # Remove outdated version of irecovery it's present in the data dir
         if self.exists:
             logger.debug("Removing outdated version of irecovery", self.args.debug)
-            (self.data_dir / "gaster").unlink()
+            (self.data_dir / "irecovery").unlink()
 
         # Make downloaded irecovery executable
         utils.make_executable(self.data_dir / "irecovery")
-        logger.debug(f"Made gaster executable", self.args.debug)
+        logger.debug(f"Made irecovery executable", self.args.debug)
 
     def download(self) -> None:
         # Check for irecovery's presence in data directory
@@ -430,7 +436,7 @@ class irecovery:
         sha = open("latest_build_sha.txt", "r")
         num = open("latest_build_num.txt", "r")
         if exists:
-            strings = sp.getoutput(f"strings {self.data_dir / 'gaster'}").splitlines()
+            strings = sp.getoutput(f"strings {self.data_dir / 'irecovery'}").splitlines()
             check = f"Version: {sha.read()}-{num.read()}"
             logger.debug(f"Checking for '{check}'", self.args.debug)
 
@@ -467,11 +473,37 @@ class irecovery:
         Path("latest_build_sha.txt").unlink()
         Path("latest_build_num.txt").unlink()
     
-    def run(self, type: str, decrypt_input: Path = None, decrypt_output: Path = None) -> tuple[int, str]:
+    def run(self, type: str, file: Path = None, command: str = None) -> tuple[int, str]:
         if type == "info":
             cmd = f"{self.path()} -q"
             
             print("Running irecovery -q...")
+            logger.debug(f"Running command: {cmd}", self.args.debug)
+            
+            code, output = sp.getstatusoutput(f"{cmd}")
+
+            if code != 0:
+                logger.error(f'Failed to run irecovery: {output}')
+                sys.exit(1)
+            
+            return code, output
+        elif type == "file":
+            cmd = f"{self.path()} -f {file}"
+            
+            print("Running irecovery -f...")
+            logger.debug(f"Running command: {cmd}", self.args.debug)
+            
+            code, output = sp.getstatusoutput(f"{cmd}")
+
+            if code != 0:
+                logger.error(f'Failed to run irecovery: {output}')
+                sys.exit(1)
+            
+            return code, output
+        elif type == "cmd":
+            cmd = f"{self.path()} -c {command}"
+            
+            print("Running irecovery -c...")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")

@@ -81,7 +81,8 @@ class palera1n:
         self.deviceid = utils.device_info("recovery", "PRODUCT", self.data_dir, self.args)
         logger.debug(f"CPID: {self.cpid}, MODEL: {self.model}, ID: {self.deviceid}", self.args.debug)
         
-        if utils.check_pwned() is False:
+        # Check if the device is pwned already, if not, then use gaster
+        if utils.check_pwned(self.data_dir, self.args) is False:
             logger.log("Pwning device")
             Gaster(self.data_dir, self.args).run("pwn")
         

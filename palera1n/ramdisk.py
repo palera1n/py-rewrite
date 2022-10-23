@@ -1,5 +1,6 @@
 import pkgutil
 from pathlib import Path
+from argparse import Namespace
 from remotezip import RemoteZip
 import requests
 import sys
@@ -12,14 +13,18 @@ from .deps import Gaster, iBootPatcher
 
 
 class Ramdisk:
-    def __init__(self, tmp: Path, cpid: str, model: str, deviceid: str, in_package: bool) -> None:
-        self.tmp = tmp
+    def __init__(self, args: Namespace, in_package: bool, data_dir: Path, tmp: Path, cpid: str, model: str, deviceid: str) -> None:
         self.in_package = in_package
+        self.args = args
         
         # Device info
         self.cpid = cpid
         self.model = model
         self.deviceid = deviceid
+        
+        # Directories
+        self.data_dir = data_dir
+        self.tmp = tmp
         
         self.ipsw = None
 

@@ -128,8 +128,8 @@ def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
                 
         return info
 
-def check_pwned() -> tuple[bool, str]:
-    pwned = device_info("recovery", "PWND")
+def check_pwned(data_dir: Path, args: Namespace) -> tuple[bool, str]:
+    pwned = device_info("recovery", "PWND", data_dir, args)
     if pwned == "":
         return False, None
     else:
