@@ -67,11 +67,11 @@ class Ramdisk:
             ipsw.extract(identity["Manifest"]["RestoreRamDisk"]["Info"]["Path"], path=self.tmp)
             ipsw.extract(identity["Manifest"]["RestoreRamDisk"]["Info"]["Path"] + ".trustcache", path=self.tmp)
             
-            logger.log("Decrypting iBSS and iBEC")
-            Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / str(identity["Manifest"]["iBSS"]["Info"]["Path"]).replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBSS.dec"))
-            Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / str(identity["Manifest"]["iBEC"]["Info"]["Path"]).replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBEC.dec"))
-            
-            logger.log("Patching iBSS and iBEC")
-            iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBSS.dec"), (self.tmp / "iBSS.patched"))
-            iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBEC.dec"), (self.tmp / "iBEC.patched"), nvram_unlock=True, boot_args=f"rd=md0 debug=0x2014e -v wdt=-1{' -restore' if self.cpid == '0x8960' or self.cpid == '0x8960' or self.cpid == '0x7001' else ''}")
+        logger.log("Decrypting iBSS and iBEC")
+        Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / str(identity["Manifest"]["iBSS"]["Info"]["Path"]).replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBSS.dec"))
+        Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / str(identity["Manifest"]["iBEC"]["Info"]["Path"]).replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBEC.dec"))
+        
+        logger.log("Patching iBSS and iBEC")
+        iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBSS.dec"), (self.tmp / "iBSS.patched"))
+        iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBEC.dec"), (self.tmp / "iBEC.patched"), nvram_unlock=True, boot_args=f"rd=md0 debug=0x2014e -v wdt=-1{' -restore' if self.cpid == '0x8960' or self.cpid == '0x8960' or self.cpid == '0x7001' else ''}")
             
