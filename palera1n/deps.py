@@ -513,3 +513,59 @@ class irecovery:
                 sys.exit(1)
             
             return code, output
+
+# generic dependency class
+class Dependency:
+    def __init__(self, args: argparse.Namespace):
+        self.args = args
+
+    def path(self) -> Path:
+        return self.data_dir / self.filename
+
+    def exists_in_data_dir(self) -> bool:
+        return self.path().exists()
+
+    def save_file(self, content: bytearray) -> None:
+        with open(self.path(), "wb") as f:
+            f.write(content)
+
+    def download(self) -> None:
+        # Check for dependency's presence in data directory
+        exists = self.exists_in_data_dir()
+
+        # Get name and extension of a local dependency
+        local_filepath = self.data_dir / self.filename
+
+        # Get name of a remote dependency
+        remote_filename = self.remote_filename
+
+        # Download dependency zip to a bytearray
+        try:
+            res = requests.get(self.download_url, stream=True)
+            if res.status_code == 200:
+                content = bytearray()
+                for data in res.iter_content(4096):
+                    content += data
+        except (NewConnectionError, ConnectionError, RequestException) as err:
+            logger.error(f"{self.filename} download URL is not reachable. Error: {err}")
+
+        # save dependency to a file
+        if content is None:
+            if exists:
+                logger.log(f'Could not download {self.filename}, falling back to {self.filename} found in path',
+                        color=colors["yellow"])
+            else:
+                sys.exit(1)
+        else:
+            logger.debug(f"Saving {self.filename} to {self.data_dir}", self.args.debug)
+            self.save_file(content)
+
+    def run(self, args: list[str]) -> tuple[int, str]:
+        cmd = f"{self.path()} {' '.join(args)}"
+        print(f"Running {self.filename}...")
+        logger.debug(f"Running command: {cmd}", self.args.debug)
+        code, output = sp.getstatusoutput(f"{cmd}")
+        if code != 0:
+            logger.error(f'Failed to run {self.filename}: {output}')
+            sys.exit(1)
+        return code, output
