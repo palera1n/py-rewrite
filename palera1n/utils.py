@@ -119,10 +119,10 @@ def check_state(type: str) -> bool:
         return False
     elif type == "normal":
         if is_macos():
-            if " Apple Mobile Device (DFU Mode):" in sp.getoutput("system_profiler SPUSBDataType"):
+            if (" iPhone:", " iPad:", " iPod:") in sp.getoutput("system_profiler SPUSBDataType"):
                 return True
         else:
-            if "Recovery Mode" in sp.getoutput("lsusb"):
+            if ("iPhone", "iPad", "iPod") in sp.getoutput("lsusb"):
                 return True
         return False
 

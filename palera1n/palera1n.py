@@ -37,8 +37,7 @@ class palera1n:
         self.os = sp.getoutput("uname")
 
     def main(self) -> None:
-        # logger.log(f"palera1n | Version {utils.get_version()}")
-        print(colors["bold"] + f"palera1n | Version 2.0.0" + colors["reset"])
+        print(colors["bold"] + f"palera1n | Version {utils.get_version()}" + colors["reset"])
         print("Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy")
         
         if self.in_package:
@@ -158,7 +157,7 @@ class palera1n:
                 
                 print("Patching iBoot")
                 Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBoot").replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "ibot.dec"))
-                iBootPatcher(self.data_dir, self.args).run((self.tmp / "ibot.dec"), (self.tmp / "ibot.patched"), nvram_unlock=True, fsboot=True, boot_args=f"-v keepsyms=1 debug=0x2014e{'rd=disk0s1s8' if self.args.semi_tethered else ''}")
+                iBootPatcher(self.data_dir, self.args).run((self.tmp / "ibot.dec"), (self.tmp / "ibot.patched"), nvram_unlock=True, fsboot=True, boot_args=f"{'serial=3' if self.args.serial else '-v'} keepsyms=1 debug=0x2014e{'rd=disk0s1s8' if self.args.semi_tethered else ''}")
                 with open((self.tmp / "ibot.patched"), "wb") as f:
                     content = f.read()
                     new = content.replace(b"/kernelcache", b"/kernelcachd")
