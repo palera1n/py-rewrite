@@ -7,12 +7,14 @@ import subprocess as sp
 import sys
 from argparse import Namespace
 from pathlib import Path
-from typing import Union
 import string
 import sys
 import pkg_resources
+import time
+from typing import Union
 
 from pymobiledevice3.lockdown import LockdownClient
+from paramiko.client import SSHClient
 
 from . import logger
 from .deps import irecovery
@@ -97,27 +99,48 @@ def get_resources_dir(package: str) -> Path:
     return res / "data"
 
 
-def check_state(type: str) -> None:
+def check_state(type: str) -> bool:
     """Check if the device is in a state"""
     if type == "dfu":
         if is_macos():
             if " Apple Mobile Device (DFU Mode):" in sp.getoutput("system_profiler SPUSBDataType"):
-                logger.log("Device connected in DFU mode!")
-            else:
-                logger.error("Device isn't in DFU mode, please rerun the script and try again")
-                sys.exit(1)
+                return True
         else:
             if "DFU Mode" in sp.getoutput("lsusb"):
-                logger.log("Device connected in DFU mode!")
-            else:
-                logger.error("Device isn't in DFU mode, please rerun the script and try again")
-                sys.exit(1)
+                return True
+        return False
+    elif type == "recovery":
+        if is_macos():
+            if " Apple Mobile Device (Recovery Mode):" in sp.getoutput("system_profiler SPUSBDataType"):
+                return True
+        else:
+            if "Recovery Mode" in sp.getoutput("lsusb"):
+                return True
+        return False
+    elif type == "normal":
+        if is_macos():
+            if " Apple Mobile Device (DFU Mode):" in sp.getoutput("system_profiler SPUSBDataType"):
+                return True
+        else:
+            if "Recovery Mode" in sp.getoutput("lsusb"):
+                return True
+        return False
+
+
+def wait(type: str) -> bool:
+    """Wait for device to go into a state"""
+    if not check_state(type):
+        logger.log(f"Waiting for device in {'DFU' if type == 'dfu' else type} mode...")
+    
+        while check_state(type) is not True:
+            time.sleep(1)
+
 
 def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
     """Get info about the device"""
     if type == "normal":
-        lockdown = LockdownClient(client_name="palera1n", usbmux_connection_type="USB")
-        return lockdown.all_values[string]
+        with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
+            return lockdown.all_values[string]
     elif type == "recovery":
         #status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
         code, output = irecovery(data_dir, args).run("info")
@@ -128,9 +151,34 @@ def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
                 
         return info
 
+
 def check_pwned(data_dir: Path, args: Namespace) -> tuple[bool, str]:
     pwned = device_info("recovery", "PWND", data_dir, args)
     if pwned == "":
         return False, None
     else:
         return True, pwned
+
+
+def run(command: str, args: Namespace) -> None:
+    print(f"Running {command.split()[0]}")
+    logger.debug(f"Running command: {cmd}", args.debug)
+    status, output = sp.getstatusoutput(command)
+    if status != 0:
+        logger.error(f"An error occurred when running {command.split()[0]}: {output}")
+        sys.exit(1)
+
+
+def run_ssh(client: SSHClient, command: str, args: Namespace) -> str:
+    logger.debug(f"Running command (SSH): {command}", args.debug)
+    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
+    
+    if stderr != "":
+        logger.error(f"An error occurred while running an SSH command: {stderr}")
+        sys.exit(1)
+    
+    return stdout
+
+
+def get_path(identity: dict, item: str) -> str:
+    return identity["Manifest"][item]["Info"]["Path"]

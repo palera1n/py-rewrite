@@ -21,23 +21,21 @@
 </p>
 
 <p align="center">
-iOS 15.0-15.3.1 **work in progress, tethered** checkm8 "jailbreak"
+iOS 15.0-15.3.1 work in progress, (semi-)tethered checkm8 "jailbreak"
 </p>
 
 # This is a work in progress.
 
 Read this throughly, feel free to ask questions, know the risks. If you want to ask questions, either:
 
-1. Ask in the r/jailbreak Discord #palera1n channel
-2. Ask in the [palera1n Discord](https://discord.gg/4S3yUMxuQH)
-3. Open a GitHub issue
+1. Ask in the [palera1n Discord](https://discord.gg/4S3yUMxuQH)
+2. Ask in the r/jailbreak Discord #palera1n channel
 
 Please, please, please, provide necessary info:
 
 - iOS version and device (eg. iPhone 7+ 15.1, iPhone 6s 15.3.1)
 - Computer's OS and version (eg. Ubuntu 22.04, macOS 13.0)
 - The command you ran
-- Debug logs with `--debug`
 
 **DO NOT** harass tweak devs if tweaks don't work. Refer to [here](https://github.com/itsnebulalol/ios15-tweaks) for compatiblity.
 
@@ -62,16 +60,20 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
 
 # How to use
 
-1. Clone this repo with `git clone -b tweaks --recursive https://github.com/palera1n/palera1n && cd palera1n`
-2. Run `./palera1n.sh --tweaks <ios version youre on atm>`
+## Install pip package (stable)
+
+1. Install palera1n with `pip install -U palera1n`
+2. Run `palera1n`
     - \[A10+\] Before running, you **must** disable your passcode
-    - Put your device in DFU Mode before running.
-3. Follow the steps
+    - If you'd like to start from DFU mode, append `--dfu <iOS version you're currently on>`
+3. Follow the on-screen steps carefully
+
+## Install latest (possibly unstable)
 
 1. Install palera1n with `pip install -U git+https://github.com/palera1n/palera1n`
-2. Run `palera1n --tweaks <iOS version you're currently on>`
+2. Run `palera1n`
     - \[A10+\] Before running, you **must** disable your passcode
-    - Put your device in DFU Mode before running.
+    - If you'd like to start from DFU mode, append `--dfu <iOS version you're currently on>`
 3. Follow the on-screen steps carefully
 
 # Credits

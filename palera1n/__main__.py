@@ -14,10 +14,16 @@ def main(argv=None, in_package=None) -> None:
                         help="shows some debug info, only useful for testing")
     parser.add_argument('-i', '--ipsw', type=str,
                         help="specify IPSW url")
-    parser.add_argument('-t', '--tweaks', type=float,
-                        help="specify iOS version for the tethered jailbreak")
-    parser.add_argument('-D', '--dfu', type=float,
-                        help="specify iOS version for the rootless jailbreak")
+    parser.add_argument('-D', '--dfu', type=str,
+                        help="use DFU mode")
+    parser.add_argument('-r', '--rootless', action='warning', version=f'Rootless is not implemented yet.', #type=str,
+                        help="use rootless mode")
+    parser.add_argument('-s', '--semi-tethered', action='store_true',
+                        help="semi-tether a tethered install")
+    parser.add_argument('-R', '--restore-rootfs', action='store_true',
+                        help="restore rootfs on (semi-)tethered")
+    parser.add_argument('-S', '--serial', action='store_true',
+                        help="add serial=3 to bootargs for serial output")
     parser.add_argument('-v', '--version', action='version', version=f'palera1n v{utils.get_version()}',
                         help='show current version and exit')
     args = parser.parse_args()

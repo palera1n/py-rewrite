@@ -13,10 +13,67 @@ import tarfile
 import zipfile
 from glob import glob
 import sys
+import time
 
 from . import utils, logger
 from .logger import colors
 
+class Dependency:
+    def __init__(self, args: Namespace):
+        self.args = args
+
+    def path(self) -> Path:
+        return self.data_dir / self.filename
+
+    def exists_in_data_dir(self) -> bool:
+        return self.path().exists()
+
+    def save_file(self, content: bytearray) -> None:
+        with open(self.path(), "wb") as f:
+            f.write(content)
+
+    def download(self) -> None:
+        # Check for dependency's presence in data directory
+        exists = self.exists_in_data_dir()
+
+        # Get name and extension of a local dependency
+        local_filepath = self.data_dir / self.filename
+
+        # Get name of a remote dependency
+        remote_filename = self.remote_filename
+
+        # Download dependency zip to a bytearray
+        try:
+            res = requests.get(self.download_url, stream=True)
+            if res.status_code == 200:
+                content = bytearray()
+                for data in res.iter_content(4096):
+                    content += data
+        except (NewConnectionError, ConnectionError, RequestException) as err:
+            logger.error(f"{self.filename} download URL is not reachable. Error: {err}")
+
+        # save dependency to a file
+        if content is None:
+            if exists:
+                logger.log(f'Could not download {self.filename}, falling back to {self.filename} found in path',
+                        color=colors["yellow"])
+            else:
+                sys.exit(1)
+        else:
+            logger.debug(f"Saving {self.filename} to {self.data_dir}", self.args.debug)
+            self.save_file(content)
+
+    def run(self, args: list[str]) -> tuple[int, str]:
+        cmd = f"{self.path()} {' '.join(args)}"
+        print(f"Running {self.filename}...")
+        logger.debug(f"Running command: {cmd}", self.args.debug)
+        
+        status, output = sp.getstatusoutput(f"{cmd}")
+        if status != 0:
+            logger.error(f'Failed to run {self.filename}: {output}')
+            sys.exit(1)
+        
+        return status, output
 
 class iBootPatcher:
     def __init__(self, data_dir: Path, args: Namespace) -> None:
@@ -153,15 +210,18 @@ class iBootPatcher:
         Path("latest_build_sha.txt").unlink()
         Path("latest_build_num.txt").unlink()
     
-    def run(self, input: Path, output: Path, nvram_unlock: bool = False, boot_args: str = None) -> tuple[int, str]:
+    def run(self, input: Path, output: Path, nvram_unlock: bool = False, fsboot: bool = False, boot_args: str = None) -> tuple[int, str]:
         cmd = f"{self.path()} {input} {output}"
         if nvram_unlock is True:
             cmd += " -n"
+            
+        if fsboot is True:
+            cmd += " -f"
         
         if boot_args is not None:
             cmd += f" {boot_args}"
         
-        print("Running iBoot64Patcher...")
+        print("Running iBoot64Patcher")
         logger.debug(f"Running command: {cmd}", self.args.debug)
         
         code, output = sp.getstatusoutput(f"{cmd}")
@@ -303,7 +363,7 @@ class Gaster:
         if type == "pwn":
             cmd = f"{self.path()} pwn"
             
-            print("Running gaster pwn...")
+            print("Running gaster pwn")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -316,7 +376,7 @@ class Gaster:
         elif type == "reset":
             cmd = f"{self.path()} reset"
             
-            print("Running gaster reset...")
+            print("Running gaster reset")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -329,7 +389,7 @@ class Gaster:
         elif type == "decrypt":
             cmd = f"{self.path()} decrypt {decrypt_input} {decrypt_output}"
             
-            print("Running gaster decrypt...")
+            print("Running gaster decrypt")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -477,7 +537,7 @@ class irecovery:
         if type == "info":
             cmd = f"{self.path()} -q"
             
-            print("Running irecovery -q...")
+            print("Running irecovery -q")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -490,7 +550,7 @@ class irecovery:
         elif type == "file":
             cmd = f"{self.path()} -f {file}"
             
-            print("Running irecovery -f...")
+            print("Running irecovery -f")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -498,12 +558,14 @@ class irecovery:
             if code != 0:
                 logger.error(f'Failed to run irecovery: {output}')
                 sys.exit(1)
+            
+            time.sleep(1)
             
             return code, output
         elif type == "cmd":
             cmd = f"{self.path()} -c {command}"
             
-            print("Running irecovery -c...")
+            print("Running irecovery -c")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -512,60 +574,6 @@ class irecovery:
                 logger.error(f'Failed to run irecovery: {output}')
                 sys.exit(1)
             
+            time.sleep(1)
+            
             return code, output
-
-# generic dependency class
-class Dependency:
-    def __init__(self, args: argparse.Namespace):
-        self.args = args
-
-    def path(self) -> Path:
-        return self.data_dir / self.filename
-
-    def exists_in_data_dir(self) -> bool:
-        return self.path().exists()
-
-    def save_file(self, content: bytearray) -> None:
-        with open(self.path(), "wb") as f:
-            f.write(content)
-
-    def download(self) -> None:
-        # Check for dependency's presence in data directory
-        exists = self.exists_in_data_dir()
-
-        # Get name and extension of a local dependency
-        local_filepath = self.data_dir / self.filename
-
-        # Get name of a remote dependency
-        remote_filename = self.remote_filename
-
-        # Download dependency zip to a bytearray
-        try:
-            res = requests.get(self.download_url, stream=True)
-            if res.status_code == 200:
-                content = bytearray()
-                for data in res.iter_content(4096):
-                    content += data
-        except (NewConnectionError, ConnectionError, RequestException) as err:
-            logger.error(f"{self.filename} download URL is not reachable. Error: {err}")
-
-        # save dependency to a file
-        if content is None:
-            if exists:
-                logger.log(f'Could not download {self.filename}, falling back to {self.filename} found in path',
-                        color=colors["yellow"])
-            else:
-                sys.exit(1)
-        else:
-            logger.debug(f"Saving {self.filename} to {self.data_dir}", self.args.debug)
-            self.save_file(content)
-
-    def run(self, args: list[str]) -> tuple[int, str]:
-        cmd = f"{self.path()} {' '.join(args)}"
-        print(f"Running {self.filename}...")
-        logger.debug(f"Running command: {cmd}", self.args.debug)
-        code, output = sp.getstatusoutput(f"{cmd}")
-        if code != 0:
-            logger.error(f'Failed to run {self.filename}: {output}')
-            sys.exit(1)
-        return code, output
