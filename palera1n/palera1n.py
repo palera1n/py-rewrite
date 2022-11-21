@@ -1,14 +1,14 @@
-import subprocess as sp
+# imports
 from argparse import Namespace
+from deps import iBootPatcher, Gaster, irecovery
+from logger import colors
 from pathlib import Path
+from ramdisk import Ramdisk
+import logger
+import subprocess as sp
 import tempfile
 import time
-
-from . import logger
-from . import utils
-from .logger import colors
-from .deps import iBootPatcher, Gaster, irecovery
-from .ramdisk import Ramdisk
+import utils
 
 
 class palera1n:

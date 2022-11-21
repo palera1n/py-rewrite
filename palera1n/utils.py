@@ -1,23 +1,20 @@
+# imports
+from argparse import Namespace
+from deps import irecovery
+from paramiko.client import SSHClient
+from pathlib import Path
+from pymobiledevice3.lockdown import LockdownClient
+from typing import Union
 import importlib
+import logger
 import os
+import pkg_resources
 import platform
-import plistlib
 import shutil
 import subprocess as sp
 import sys
-from argparse import Namespace
-from pathlib import Path
-import string
 import sys
-import pkg_resources
 import time
-from typing import Union
-
-from pymobiledevice3.lockdown import LockdownClient
-from paramiko.client import SSHClient
-
-from . import logger
-from .deps import irecovery
 
 
 def is_macos() -> bool:

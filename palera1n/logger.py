@@ -1,6 +1,8 @@
+#imports
 import os
 
-if os.name == 'nt':  # Only if we are running on Windows
+# fix windows up
+if os.name == 'nt':
     from ctypes import windll
     k = windll.kernel32
     k.SetConsoleMode(k.GetStdHandle(-11), 7)

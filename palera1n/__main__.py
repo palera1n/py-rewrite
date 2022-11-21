@@ -1,6 +1,7 @@
+# imports
 import argparse
 import palera1n
-from . import utils
+import utils
 
 
 def main(argv=None, in_package=None) -> None:
@@ -16,7 +17,7 @@ def main(argv=None, in_package=None) -> None:
                         help="specify IPSW url")
     parser.add_argument('-D', '--dfu', type=str,
                         help="use DFU mode")
-    parser.add_argument('-r', '--rootless', action='warning', version=f'Rootless is not implemented yet.', #type=str,
+    parser.add_argument('-r', '--rootless', action='version', version=f'Rootless is not implemented yet.', #type=str,
                         help="use rootless mode")
     parser.add_argument('-s', '--semi-tethered', action='store_true',
                         help="semi-tether a tethered install")

@@ -1,22 +1,20 @@
-import subprocess as sp
+# imports
 from argparse import Namespace
-from pathlib import Path
-from typing import Union
-
-import requests
-import hashlib
-import platform
-from shutil import move
-from requests.exceptions import RequestException, ConnectionError
-from urllib3.exceptions import NewConnectionError
-import tarfile
-import zipfile
 from glob import glob
+from logger import colors
+from pathlib import Path
+from requests.exceptions import RequestException, ConnectionError
+from typing import Union
+from urllib3.exceptions import NewConnectionError
+import platform
+import requests
+import subprocess as sp
 import sys
+import tarfile
 import time
+import utils, logger
+import zipfile
 
-from . import utils, logger
-from .logger import colors
 
 class Dependency:
     def __init__(self, args: Namespace):

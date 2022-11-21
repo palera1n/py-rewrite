@@ -1,1 +1,1 @@
-from .palera1n import palera1n
+from palera1n import palera1n

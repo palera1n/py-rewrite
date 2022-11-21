@@ -1,27 +1,24 @@
-import pkgutil
-from pathlib import Path
+# imports
 from argparse import Namespace
-from remotezip import RemoteZip
-import requests
-import sys
-import plistlib
-import tarfile
-import time
-import shutil
-import os
-
+from deps import Gaster, iBootPatcher, irecovery
+from img4 import IMG4
 from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
+from pathlib import Path
 from pymobiledevice3 import usbmux
 from pymobiledevice3.lockdown import LockdownClient
 from pymobiledevice3.tcp_forwarder import TcpForwarder
-
-from . import logger
-from . import utils
-# from . import tcprelay
-from .logger import colors
-from .deps import Gaster, iBootPatcher, irecovery
-from .img4 import IMG4
+from remotezip import RemoteZip
+import logger
+import os
+import plistlib
+import requests
+import shutil
+import string
+import sys
+import tarfile
+import time
+import utils
 
 
 class Ramdisk:

@@ -1,12 +1,7 @@
-import pkgutil
-from pathlib import Path
+# imports
 from argparse import Namespace
-import sys
+from pathlib import Path
 import pyimg4
-
-from . import logger
-from . import utils
-from .logger import colors
 
 
 class IMG4:
