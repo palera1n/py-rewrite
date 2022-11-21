@@ -1,5 +1,6 @@
 # imports
 from argparse import Namespace
+from device_info import device_info
 from deps import iBootPatcher, Gaster, irecovery
 from logger import colors
 from pathlib import Path
@@ -80,14 +81,14 @@ class palera1n:
         if self.args.dfu:
             self.version = self.args.dfu
         else:
-            self.version = utils.device_info("normal", "ProductVersion", self.data_dir, self.args)
+            self.version = device_info("normal", "ProductVersion", self.data_dir, self.args)
         
         utils.wait("dfu")
         
         logger.log("Getting device info")
-        self.cpid = utils.device_info("recovery", "CPID", self.data_dir, self.args)
-        self.model = utils.device_info("recovery", "MODEL", self.data_dir, self.args)
-        self.deviceid = utils.device_info("recovery", "PRODUCT", self.data_dir, self.args)
+        self.cpid = device_info("recovery", "CPID", self.data_dir, self.args)
+        self.model = device_info("recovery", "MODEL", self.data_dir, self.args)
+        self.deviceid = device_info("recovery", "PRODUCT", self.data_dir, self.args)
         logger.debug(f"CPID: {self.cpid}, MODEL: {self.model}, ID: {self.deviceid}", self.args.debug)
         
         # Check if the device is pwned already, if not, then use gaster
