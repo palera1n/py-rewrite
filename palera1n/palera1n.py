@@ -53,7 +53,7 @@ class palera1n:
         
         # Dependency check
         logger.log("Checking for dependencies...")
-        print("Checking for iBoot64Patcher")
+        logger.log("Checking for iBoot64Patcher...")
         self.ibootpatcher = utils.cmd_in_path('iBoot64Patcher')
         if self.ibootpatcher:
             logger.debug("iBoot64Patcher found!", self.args.debug)
@@ -61,7 +61,7 @@ class palera1n:
             logger.debug("iBoot64Patcher not found in path", self.args.debug)
             iBootPatcher(self.data_dir, self.args).download()
         
-        print("Checking for gaster")
+        logger.log("Checking for gaster...")
         self.gaster = utils.cmd_in_path('gaster')
         if self.gaster:
             logger.debug("gaster found!", self.args.debug)
@@ -69,7 +69,7 @@ class palera1n:
             logger.debug("gaster not found in path", self.args.debug)
             Gaster(self.data_dir, self.args).download()
         
-        print("Checking for irecovery")
+        logger.log("Checking for irecovery...")
         self.irecovery = utils.cmd_in_path('irecovery')
         if self.irecovery:
             logger.debug("irecovery found!", self.args.debug)

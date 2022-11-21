@@ -1,6 +1,7 @@
 # imports
 from argparse import Namespace
 from pathlib import Path
+import plistlib
 import pyimg4
 
 
