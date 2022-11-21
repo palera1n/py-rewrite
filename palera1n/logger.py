@@ -49,5 +49,5 @@ def error(message):
 
 
 def ask(message):
-    return input(colors["darkgrey"] + colors["bold"] + "[" + colors["reset"] + colors["orange"] + colors["bold"] + "?" + colors["reset"] + colors["darkgrey"] + colors["bold"] + "]" + colors["reset"] + f" {message}")
+    return input(colors["darkgrey"] + colors["bold"] + "[" + colors["reset"] + colors["orange"] + colors["bold"] + "?" + colors["reset"] + colors["darkgrey"] + colors["bold"] + "]" + colors["reset"] + f" {message} >> ")
     
