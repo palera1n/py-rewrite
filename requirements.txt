@@ -1,0 +1,8 @@
+argparse
+pathlib
+paramiko
+pyimg4
+pymobiledevice3
+remotezip
+requests
+urllib3
