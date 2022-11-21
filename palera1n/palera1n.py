@@ -57,25 +57,25 @@ class palera1n:
         
         # Dependency check
         logger.log("Checking for dependencies...")
-        logger.log("Checking for iBoot64Patcher...")
-        self.ibootpatcher = utils.cmd_in_path('iBoot64Patcher')
-        if self.ibootpatcher:
+        logger.debug("Checking for iBoot64Patcher...", self.args.debug)
+        self.ibootpatcher = self.data_dir / "iBoot64Patcher"
+        if iBootPatcher(self.data_dir, self.args).exists_in_data_dir():
             logger.debug("iBoot64Patcher found!", self.args.debug)
         else:
             logger.debug("iBoot64Patcher not found in path", self.args.debug)
             iBootPatcher(self.data_dir, self.args).download()
         
-        logger.log("Checking for gaster...")
-        self.gaster = utils.cmd_in_path('gaster')
-        if self.gaster:
+        logger.debug("Checking for gaster...", self.args.debug)
+        self.gaster = self.data_dir / "gaster"
+        if Gaster(self.data_dir, self.args).exists_in_data_dir():
             logger.debug("gaster found!", self.args.debug)
         else:
             logger.debug("gaster not found in path", self.args.debug)
             Gaster(self.data_dir, self.args).download()
         
-        logger.log("Checking for irecovery...")
-        self.irecovery = utils.cmd_in_path('irecovery')
-        if self.irecovery:
+        logger.debug("Checking for irecovery...", self.args.debug)
+        self.irecovery = self.data_dir / "irecovery"
+        if irecovery(self.data_dir, self.args).exists_in_data_dir():
             logger.debug("irecovery found!", self.args.debug)
         else:
             logger.debug("irecovery not found in path", self.args.debug)
