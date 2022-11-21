@@ -96,6 +96,20 @@ class palera1n:
             Gaster(self.data_dir, self.args).run("pwn")
             Gaster(self.data_dir, self.args).run("reset")
         
+        # Get IPSW
+        if self.args.ipsw:
+            self.ipsw = self.args.ipsw
+        else:
+            res = requests.get(f"https://api.ipsw.me/v4/device/{self.deviceid}?type=ipsw")
+            firmwares = res.json()["firmwares"]
+            for firmware in firmwares:
+                if firmware["version"] == self.version:
+                    self.ipsw = firmware["url"]
+                
+            if self.ipsw is None or self.ipsw == "":
+                logger.error("IPSW could not be fetched! Please supply one with --ipsw")
+                sys.exit(1)
+        
         # Create tmp folder for ramdisk
         if self.args.restore_rootfs or not Path(self.data_dir / f"blobs/{self.deviceid}_{self.version}.shsh2").exists():
             with tempfile.TemporaryDirectory() as rd_tmp:
@@ -107,7 +121,7 @@ class palera1n:
                 if self.args.restore_rootfs:
                     rd.restore_rootfs()
                 else:
-                    rd.install()
+                    rd.install(self.ipsw)
         
         # tmp folder for everything else
         with tempfile.TemporaryDirectory() as tmp:
@@ -123,16 +137,6 @@ class palera1n:
             # Now we check if boot files exist
             if not Path(self.data_dir / f"boot/{self.deviceid}_{self.version}/ibot.img4").exists():
                 logger.log(f"Creating boot files for {self.version}")
-                
-                res = requests.get(f"https://api.ipsw.me/v4/device/{self.deviceid}?type=ipsw")
-                firmwares = res.json()["firmwares"]
-                for firmware in firmwares:
-                    if firmware["version"] == self.version:
-                        self.ipsw = firmware["url"]
-                    
-                if self.ipsw is None or self.ipsw == "":
-                    logger.error("IPSW could not be fetched! Please supply one with --ipsw")
-                    sys.exit(1)
                     
                 with RemoteZip(self.ipsw) as ipsw:
                     ipsw.extract("BuildManifest.plist", path=self.tmp)
@@ -148,7 +152,7 @@ class palera1n:
                     ipsw.extract(utils.get_path(identity, "iBSS"), path=self.tmp)
                     ipsw.extract(utils.get_path(identity, "iBoot"), path=self.tmp)
                 
-                img4 = IMG4(self.args, self.in_package, rd_shsh, self.data_dir, self.tmp)
+                img4 = IMG4(self.args, self.in_package, self.data_dir / f"blobs/{self.deviceid}_{self.version}.shsh2", self.data_dir, self.tmp)
                 
                 print("Patching iBSS")
                 Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBSS").replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBSS.dec"))

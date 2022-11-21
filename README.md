@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-iOS 15.0-15.3.1 work in progress, (semi-)tethered checkm8 "jailbreak"
+iOS 15.0-15.7.1 work in progress, (semi-)tethered checkm8 "jailbreak"
 </p>
 
 # This is a work in progress.
@@ -53,8 +53,7 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
     - You must install the Tips app from the App Store before running the script
 2. Linux or macOS computer
     - Python 3 is required
-3. iOS 15.0-15.3.1
-    - 15.1 is the best to be on as of now. 15.0-15.0.2 and 15.2-15.3.1 have App Store app launching issues
+3. iOS 15.0-15.7.1
 4. A brain
     - Remember, this is mainly for developers.
 

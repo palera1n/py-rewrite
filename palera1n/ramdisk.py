@@ -7,8 +7,9 @@ import sys
 import plistlib
 import tarfile
 import time
+import shutil
+import os
 
-from threading import Thread
 from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from pymobiledevice3 import usbmux
@@ -52,19 +53,22 @@ class Ramdisk:
             rd_logo = Path("palera1n/data/ramdisklogo.im4p")
             rd_shsh = Path("palera1n/data/shsh") / f"{self.cpid}.shsh2"
         
-        res = requests.get(f"https://api.ipsw.me/v4/device/{self.deviceid}?type=ipsw")
-        firmwares = res.json()["firmwares"]
-        for firmware in firmwares:
-            if firmware["version"] == version:
-                self.ipsw = firmware["url"]
-        
+        if self.args.ipsw:
+            self.ipsw = self.args.ipsw
+        else:
+            res = requests.get(f"https://api.ipsw.me/v4/device/{self.deviceid}?type=ipsw")
+            firmwares = res.json()["firmwares"]
+            for firmware in firmwares:
+                if firmware["version"] == version:
+                    self.ipsw = firmware["url"]
+                
+            if self.ipsw is None or self.ipsw == "":
+                logger.error("IPSW could not be fetched! Please supply one with --ipsw")
+                sys.exit(1)
+            
         if utils.check_pwned() is False:
             print("Pwning device")
             Gaster(self.data_dir, self.args).run("pwn")
-            
-        if self.ipsw is None or self.ipsw == "":
-            logger.error("IPSW could not be fetched! Please supply one with --ipsw")
-            sys.exit(1)
         
         with RemoteZip(self.ipsw) as ipsw:
             ipsw.extract("BuildManifest.plist", path=self.tmp)
@@ -107,6 +111,24 @@ class Ramdisk:
 
         print("Creating ramdisk dmg")
         img4.im4p_to_raw((self.tmp / utils.get_path(identity, "RestoreRamDisk")), (self.tmp / "ramdisk.dmg"))
+        
+        # Download kpf zip
+        try:
+            res = requests.get("https://nightly.link/palera1n/PongoOS/workflows/kpf/iOS15/Kernel15Patcher-iOS.zip", stream=True)
+            if res.status_code == 200:
+                with open("kpf.zip", "wb") as f:
+                    f.write(res.content)
+            else:
+                logger.error(f"Provided URL is not reachable. Status code: {res.status_code}")
+                exit(1)
+        except (NewConnectionError, ConnectionError, RequestException) as err:
+            logger.error(f"gaster versioning download URL is not reachable. Error: {err}")
+        
+        # Unzip kpf zip
+        with zipfile.ZipFile("kpf.zip", 'r') as f:
+            f.extractall(".")
+        Path("kpf.zip").unlink()
+        
         if self.os == "Darwin":
             # Computer is macOS, we can use hdiutil and other stuff
             utils.run(f"hdiutil resize -size 256MB {self.tmp / 'ramdisk.dmg'}", self.args)
@@ -114,6 +136,10 @@ class Ramdisk:
             
             with tarfile.open(rd_tar) as f:
                 f.extractall("/tmp/palera1n-ramdisk/")
+            
+            shutil.move("Kernel15Patcher.ios", "/tmp/palera1n-ramdisk/sbin/kpf")
+            Path("/tmp/palera1n-ramdisk/sbin/kpf").chmod(755)
+            os.chown("/tmp/palera1n-ramdisk/sbin/kpf", 0, 0)
             
             # download and replace pogo
             # we aren't going to do this yet since mineek can do ramdisk trollery
@@ -151,7 +177,7 @@ class Ramdisk:
         irec.run("file", file=(self.tmp / "kernelcache.img4"))
         irec.run("cmd", command="bootx")
 
-    def install(self) -> None:
+    def install(self, ipsw: str) -> None:
         logger.log("Waiting for SSH to start")
         device = None
         while device is None:
@@ -182,12 +208,14 @@ class Ramdisk:
             out = utils.run_ssh(ssh, "/usr/bin/mount_filesystems", self.args)
             
             if self.args.semi_tethered:
-                print("Creating fakefs (this could take up to 10 minutes)")
-                out = utils.run_ssh(ssh, "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1", self.args)
-                time.sleep(3)
-                out = utils.run_ssh(ssh, "/sbin/mount_apfs /dev/disk0s1s8 /mnt8", self.args)
-                time.sleep(2)
-                out = utils.run_ssh(ssh, "cp -a /mnt1/. /mnt8/", self.args)
+                has_fakefs = utils.run_ssh(ssh, "ls /dev/disk0s1s8", self.args)
+                if has_fakefs != "/dev/disk0s1s8":
+                    print("Creating fakefs (this could take up to 10 minutes)")
+                    out = utils.run_ssh(ssh, "/sbin/newfs_apfs -A -D -o role=r -v System /dev/disk0s1", self.args)
+                    time.sleep(3)
+                    out = utils.run_ssh(ssh, "/sbin/mount_apfs /dev/disk0s1s8 /mnt8", self.args)
+                    time.sleep(2)
+                    out = utils.run_ssh(ssh, "cp -a /mnt1/. /mnt8/", self.args)
                 
                 print("Setting nvram args...")
             else:
@@ -210,18 +238,36 @@ class Ramdisk:
             active = utils.run_ssh(ssh, "cat /mnt6/active", self.args)
             
             print("Creating patched kernelcache")
-            out = utils.run_ssh(ssh, f"cp /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kernelcache" +
-                                f"/mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kernelcache.bak", self.args)
-            out = utils.run_ssh(ssh, f"img4 -i /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kernelcache" +
-                                f"-o /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kcache.raw", self.args)
-            out = utils.run_ssh(ssh, f"kpf /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kcache.raw" +
-                                f"/mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kcache.patched", self.args)
-            out = utils.run_ssh(ssh, f"img4 -i /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kcache.patched" + 
-                                f"-o /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kernelcachd" +
+            kcaches = f"/mnt6/{active}/System/Library/Caches/com.apple.kernelcaches"
+            out = utils.run_ssh(ssh, f"rm -f {kcaches}/kcache.raw {kcaches}/kcache.patched {kcaches}/kcache.im4p {kcaches}/kernelcachd", self.args)
+            out = utils.run_ssh(ssh, f"cp {kcaches}/kernelcache {kcaches}/kernelcache.bak", self.args)
+            
+            Path(self.tmp / "install").mkdir()
+            with RemoteZip(ipsw) as the_ipsw:
+                the_ipsw.extract("BuildManifest.plist", path=self.tmp / "install")
+                with open(self.tmp / "BuildManifest.plist", "rb") as f:
+                    plist = plistlib.load(f)
+                
+                for the_dict in plist["BuildIdentities"]:
+                    if the_dict["ApChipID"] == self.cpid:
+                        identity = the_dict
+                        break
+                
+                print("Downloading kernelcache")
+                the_ipsw.extract(utils.get_path(identity, "kernelcache.release"), path=self.tmp / "install")
+            
+            img4 = IMG4(self.args, self.in_package, self.data_dir / f"blobs/{self.deviceid}_{self.version}.shsh2", self.data_dir, self.tmp)
+            img4.im4p_to_raw(self.tmp / "install" / utils.get_path(identity, "RestoreRamDisk"), self.tmp / "install/kcache.raw")
+            
+            #with ssh.open_sftp() as sftp:
+            #    sftp.get()
+            
+            out = utils.run_ssh(ssh, f"img4 -i {kcaches}/kernelcache -o {kcaches}/kcache.raw", self.args)
+            out = utils.run_ssh(ssh, f"kpf {kcaches}/kcache.raw {kcaches}/kcache.patched", self.args)
+            out = utils.run_ssh(ssh, f"img4 -i {kcaches}/kcache.patched -o {kcaches}/kernelcachd" +
                                 f"-M /mnt6/{active}/System/Library/Caches/apticket.der -J", self.args)
             
-            out = utils.run_ssh(ssh, f"rm /mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kcache.raw" +
-                                f"/mnt6/{active}/System/Library/Caches/com.apple.kernelcaches/kcache.patched", self.args)
+            out = utils.run_ssh(ssh, f"rm {kcaches}/kcache.raw {kcaches}/kcache.patched", self.args)
             
             print("Rebooting the device")
             out = utils.run_ssh(ssh, "/sbin/reboot", self.args)
@@ -253,9 +299,9 @@ class Ramdisk:
 
             logger.log("Connected to device, running commands")
             
-            check_disk8 = utils.run_ssh(ssh, "ls /dev/disk0s1s8", self.args)
-            if check_disk8 == "/dev/disk0s1s8":
-                print("Deleting disk 8")
+            has_fakefs = utils.run_ssh(ssh, "ls /dev/disk0s1s8", self.args)
+            if has_fakefs == "/dev/disk0s1s8":
+                print("Deleting fakefs")
                 out = utils.run_ssh(ssh, "apfs_deletefs disk0s1s8", self.args)
             
             print("Removing custom kernel")
