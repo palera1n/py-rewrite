@@ -8,13 +8,44 @@ from typing import Union
 from urllib3.exceptions import NewConnectionError
 import platform
 import requests
+import shutil
 import subprocess as sp
 import sys
 import tarfile
 import time
-import utils, logger
+import logger
 import zipfile
 
+
+def is_macos() -> bool:
+    """Determine if current OS is macOS"""
+    if platform.machine().startswith("i"):
+        return False
+
+    return sys.platform == "darwin"
+
+
+def is_linux() -> bool:
+    """Determine if current OS is Linux"""
+    return sys.platform == "linux"
+
+
+def make_executable(path: Path) -> None:
+    """Set chmod +x on a given path"""
+    file = Path(path)
+    mode = file.stat().st_mode
+    mode |= (mode & 0o444) >> 2
+    file.chmod(mode)
+
+
+def cmd_in_path(cmd: str) -> Union[None, str]:
+    """Check if command is in PATH"""
+    path = shutil.which(cmd)
+
+    if path is None:
+        return None
+
+    return path
 
 class Dependency:
     def __init__(self, args: Namespace):
@@ -82,11 +113,11 @@ class iBootPatcher:
     @property
     def remote_filename(self) -> Union[str, None]:
         # Get remote iBoot64Patcher name based on the platform
-        if utils.is_linux() and platform.machine() == "x86_64":
+        if is_linux() and platform.machine() == "x86_64":
             return "iBoot64Patcher-Linux-x86_64-RELEASE"
-        elif utils.is_macos() and platform.machine() == "x86_64":
+        elif is_macos() and platform.machine() == "x86_64":
             return "iBoot64Patcher-macOS-x86_64-RELEASE"
-        elif utils.is_macos() and platform.machine() == "arm64":
+        elif is_macos() and platform.machine() == "arm64":
             return "iBoot64Patcher-macOS-arm64-RELEASE"
 
     def exists_in_data_dir(self) -> bool:
@@ -97,7 +128,7 @@ class iBootPatcher:
         # Check if iBoot64Patcher is present in the data dir
         if self.exists_in_data_dir():
             return (self.data_dir / "iBoot64Patcher")
-        elif utils.cmd_in_path("iBoot64Patcher"):
+        elif cmd_in_path("iBoot64Patcher"):
             return "iBoot64Patcher"
 
     def save_file(self, content: bytearray) -> None:
@@ -123,7 +154,7 @@ class iBootPatcher:
             (self.data_dir / "iBoot64Patcher").unlink()
 
         # Make downloaded iBoot64Patcher executable
-        utils.make_executable(self.data_dir / "iBoot64Patcher")
+        make_executable(self.data_dir / "iBoot64Patcher")
         logger.debug(f"Made iBoot64Patcher executable", self.args.debug)
 
     def download(self) -> None:
@@ -239,11 +270,11 @@ class Gaster:
     @property
     def remote_filename(self) -> Union[str, None]:
         # Get remote gaster name based on the platform
-        if utils.is_linux() and platform.machine() == "x86_64":
+        if is_linux() and platform.machine() == "x86_64":
             return "gaster-Linux"
-        elif utils.is_macos() and platform.machine() == "x86_64":
+        elif is_macos() and platform.machine() == "x86_64":
             return "gaster-Darwin"
-        elif utils.is_macos() and platform.machine() == "arm64":
+        elif is_macos() and platform.machine() == "arm64":
             return "gaster-Darwin"
 
     def exists_in_data_dir(self) -> bool:
@@ -254,7 +285,7 @@ class Gaster:
         # Check if gaster is present in the data dir
         if self.exists_in_data_dir():
             return (self.data_dir / "gaster")
-        elif utils.cmd_in_path("gaster"):
+        elif cmd_in_path("gaster"):
             return "gaster"
 
     def save_file(self, content: bytearray) -> None:
@@ -273,7 +304,7 @@ class Gaster:
             (self.data_dir / "gaster").unlink()
 
         # Make downloaded gaster executable
-        utils.make_executable(self.data_dir / "gaster")
+        make_executable(self.data_dir / "gaster")
         logger.debug(f"Made gaster executable", self.args.debug)
 
     def download(self) -> None:
@@ -407,11 +438,11 @@ class irecovery:
     @property
     def remote_filename(self) -> Union[str, None]:
         # Get remote irecovery name based on the platform
-        if utils.is_linux() and platform.machine() == "x86_64":
+        if is_linux() and platform.machine() == "x86_64":
             return "libirecovery-static_Linux"
-        elif utils.is_macos() and platform.machine() == "x86_64":
+        elif is_macos() and platform.machine() == "x86_64":
             return "libirecovery-static_Darwin"
-        elif utils.is_macos() and platform.machine() == "arm64":
+        elif is_macos() and platform.machine() == "arm64":
             return "libirecovery-static_Darwin"
 
     def exists_in_data_dir(self) -> bool:
@@ -422,7 +453,7 @@ class irecovery:
         # Check if irecovery is present in the data dir
         if self.exists_in_data_dir():
             return (self.data_dir / "irecovery")
-        elif utils.cmd_in_path("irecovery"):
+        elif cmd_in_path("irecovery"):
             return "irecovery"
 
     def save_file(self, content: bytearray) -> None:
@@ -447,7 +478,7 @@ class irecovery:
             (self.data_dir / "irecovery").unlink()
 
         # Make downloaded irecovery executable
-        utils.make_executable(self.data_dir / "irecovery")
+        make_executable(self.data_dir / "irecovery")
         logger.debug(f"Made irecovery executable", self.args.debug)
 
     def download(self) -> None:

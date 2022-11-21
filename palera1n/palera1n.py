@@ -1,12 +1,16 @@
 # imports
 from argparse import Namespace
-from device_info import device_info
 from deps import iBootPatcher, Gaster, irecovery
+from img4 import IMG4
 from logger import colors
 from pathlib import Path
 from ramdisk import Ramdisk
 import logger
+import plistlib
+import requests
+import remotezip
 import subprocess as sp
+import sys
 import tempfile
 import time
 import utils
@@ -38,8 +42,8 @@ class palera1n:
         self.os = sp.getoutput("uname")
 
     def main(self) -> None:
-        print(colors["bold"] + f"palera1n | Version {utils.get_version()}" + colors["reset"])
-        print("Written by Nebula and Mineek | Some code and ramdisk from Nathan | Loader app by Amy")
+        print(colors["bold"] + f"palera1n | version {utils.get_version()}" + colors["reset"])
+        print("Written by Nebula and Mineek | 'ramdisk' by Nathan | Loader app by Amy")
         
         if self.in_package:
             logger.debug(f"Running from package, not cloned repo.", self.args.debug)
@@ -81,14 +85,14 @@ class palera1n:
         if self.args.dfu:
             self.version = self.args.dfu
         else:
-            self.version = device_info("normal", "ProductVersion", self.data_dir, self.args)
+            self.version = utils.device_info("normal", "ProductVersion", self.data_dir, self.args)
         
         utils.wait("dfu")
         
         logger.log("Getting device info")
-        self.cpid = device_info("recovery", "CPID", self.data_dir, self.args)
-        self.model = device_info("recovery", "MODEL", self.data_dir, self.args)
-        self.deviceid = device_info("recovery", "PRODUCT", self.data_dir, self.args)
+        self.cpid = utils.device_info("recovery", "CPID", self.data_dir, self.args)
+        self.model = utils.device_info("recovery", "MODEL", self.data_dir, self.args)
+        self.deviceid = utils.device_info("recovery", "PRODUCT", self.data_dir, self.args)
         logger.debug(f"CPID: {self.cpid}, MODEL: {self.model}, ID: {self.deviceid}", self.args.debug)
         
         # Check if the device is pwned already, if not, then use gaster
@@ -139,7 +143,7 @@ class palera1n:
             if not Path(self.data_dir / f"boot/{self.deviceid}_{self.version}/ibot.img4").exists():
                 logger.log(f"Creating boot files for {self.version}")
                     
-                with RemoteZip(self.ipsw) as ipsw:
+                with remotezip.RemoteZip(self.ipsw) as ipsw:
                     ipsw.extract("BuildManifest.plist", path=self.tmp)
                     with open(self.tmp / "BuildManifest.plist", "rb") as f:
                         plist = plistlib.load(f)

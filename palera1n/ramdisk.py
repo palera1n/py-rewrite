@@ -6,8 +6,6 @@ from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
 from pathlib import Path
 from pymobiledevice3 import usbmux
-from pymobiledevice3.lockdown import LockdownClient
-from pymobiledevice3.tcp_forwarder import TcpForwarder
 from remotezip import RemoteZip
 import logger
 import os
@@ -15,10 +13,12 @@ import plistlib
 import requests
 import shutil
 import string
+import subprocess as sp
 import sys
 import tarfile
 import time
 import utils
+import zipfile
 
 
 class Ramdisk:
@@ -118,7 +118,7 @@ class Ramdisk:
             else:
                 logger.error(f"Provided URL is not reachable. Status code: {res.status_code}")
                 exit(1)
-        except (NewConnectionError, ConnectionError, RequestException) as err:
+        except (requests.exceptions.NewConnectionError, ConnectionError, requests.exceptionsRequestException) as err:
             logger.error(f"gaster versioning download URL is not reachable. Error: {err}")
         
         # Unzip kpf zip
@@ -182,7 +182,7 @@ class Ramdisk:
         
         port = None
         while port is None:
-            port = device.connect(SSH_PORT)
+            port = device.connect(80)
     
         with SSHClient() as ssh:
             ssh.set_missing_host_key_policy(AutoAddPolicy())
@@ -277,7 +277,7 @@ class Ramdisk:
         
         port = None
         while port is None:
-            port = device.connect(SSH_PORT)
+            port = device.connect(80)
     
         with SSHClient() as ssh:
             ssh.set_missing_host_key_policy(AutoAddPolicy())

@@ -1,7 +1,10 @@
 # imports
 from argparse import Namespace
+from deps import irecovery
 from paramiko.client import SSHClient
 from pathlib import Path
+from pymobiledevice3.exceptions import NoDeviceConnectedError
+from pymobiledevice3.lockdown import LockdownClient
 from typing import Union
 import importlib
 import logger
@@ -13,6 +16,26 @@ import subprocess as sp
 import sys
 import sys
 import time
+
+
+def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
+    """Get info about the device"""
+    try:
+        if type == "normal":
+            with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
+                return lockdown.all_values[string]
+        elif type == "recovery":
+            #status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
+            code, output = irecovery(data_dir, args).run("info")
+            
+            for line in output.split('\n'):
+                if string in line:
+                    info = line.replace(f"{string}: ", "")
+                    
+            return info
+    except NoDeviceConnectedError:
+        logger.error('No device connected.')
+        exit(1)
 
 
 def is_macos() -> bool:
@@ -141,7 +164,7 @@ def check_pwned(data_dir: Path, args: Namespace) -> tuple[bool, str]:
 
 def run(command: str, args: Namespace) -> None:
     print(f"Running {command.split()[0]}")
-    logger.debug(f"Running command: {cmd}", args.debug)
+    logger.debug(f"Running command: {command}", args.debug)
     status, output = sp.getstatusoutput(command)
     if status != 0:
         logger.error(f"An error occurred when running {command.split()[0]}: {output}")
