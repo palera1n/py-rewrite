@@ -14,28 +14,111 @@ import platform
 import shutil
 import subprocess as sp
 import sys
-import sys
 import time
+
+
+def log_stdout(tolog: str):
+    sys.stdout.write(tolog)
+    sys.stdout.flush()
+
+
+def remove_log_stdout(toremove: str):
+    for _ in range(len(toremove)):
+        sys.stdout.write('\033[D \033[D')
+        sys.stdout.flush()
+
+def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
+    """Guide the user to enter DFU mode"""
+    log = "Get ready (3)"
+    colorway = logger.colors["darkgrey"] + logger.colors["bold"] + "[" + logger.colors["reset"] + logger.colors["green"] + logger.colors["bold"] + "*" + logger.colors["reset"] + logger.colors["darkgrey"] + logger.colors["bold"] + "]" + logger.colors["reset"] + " "
+
+    logger.ask("Press enter when you're ready to enter DFU mode.")
+    log_stdout(colorway + log)
+    time.sleep(1)
+    remove_log_stdout(colorway + log)
+
+    for i in range(2):
+        i = i + 1
+        remove_log_stdout(colorway + log.replace("3", str(3 - i)))
+        log_stdout(colorway + log.replace("3", str(3 - i)))
+        time.sleep(1)
+    
+    remove_log_stdout(colorway + log)
+
+    if (cpid.startswith("0x801") and product.startswith('iPad') is not True):
+        log = "Hold volume down + side button (4)"
+    else:
+        log = "Hold home + power button (4)"
+
+    log_stdout(colorway + log)
+    time.sleep(1)
+    remove_log_stdout(colorway + log)
+
+    for i in range(3):
+        i = i + 1
+        remove_log_stdout(colorway + log.replace("4", str(4 - i)))
+        log_stdout(colorway + log.replace("4", str(4 - i)))
+        if (i == 3):
+            irecovery(data_dir, args).run(type="cmd", command="reset")
+        else:
+            time.sleep(1)
+
+    remove_log_stdout(colorway + log)
+
+    if (cpid.startswith("0x801") and product.startswith('iPad') is not True):
+        log = "Release side button, but keep holding volume down (10)"
+    else:
+        log = "Release power button, but keep holding home button (10)"
+    
+    log_stdout(colorway + log)
+    time.sleep(1)
+    remove_log_stdout(colorway + log)
+    
+    for i in range(9):
+        i = i + 1
+        remove_log_stdout(colorway + log.replace("10", str(10 - i)))
+        log_stdout(colorway + log.replace("10", str(10 - i)))
+        time.sleep(1)
+    
+    if (check_state("DFU")):
+        remove_log_stdout(colorway + log)
+        logger.log("Successfully entered DFU mode.")
+    else:
+        remove_log_stdout(colorway + log)
+        logger.error("Failed to enter DFU mode. Try running the script again.")
+        sys.exit(1)
+
+
+def enter_recovery(udid: str):
+    """Enter recovery mode"""
+    executable = ""
+    if is_macos():
+        executable = "Darwin/ideviceenterrecovery"
+    else:
+        executable = "Linux/ideviceenterrecovery"
+
+    command = os.getcwd() + "/palera1n/data/binaries/" + executable + " " + udid
+
+    status, output = sp.getstatusoutput(command)
+    if status != 0:
+        logger.error(f"An error occurred when running {command.split()[0]}: {output}")
+        sys.exit(1)
 
 
 def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
     """Get info about the device"""
-    try:
-        if type == "normal":
-            with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
-                return lockdown.all_values[string]
-        elif type == "recovery":
-            #status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
-            code, output = irecovery(data_dir, args).run("info")
+    if type == "normal":
+        with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
+            return lockdown.all_values[string]
+    elif type == "recovery":
+        #status, output = sp.getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
+        code, output = irecovery(data_dir, args).run("info")
             
-            for line in output.split('\n'):
-                if string in line:
-                    info = line.replace(f"{string}: ", "")
+        for line in output.split('\n'):
+            if string in line:
+                info = line.replace(f"{string}: ", "")
                     
-            return info
-    except NoDeviceConnectedError:
-        logger.error('No device connected.')
-        exit(1)
+        return info
 
 
 def is_macos() -> bool:
@@ -115,6 +198,15 @@ def get_resources_dir(package: str) -> Path:
         res = importlib.resources.files(package)
 
     return res / "data"
+
+
+def check_is_connected() -> bool:
+    """Check if a device is connected"""
+    try:
+        with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
+            return True
+    except NoDeviceConnectedError:
+        return False
 
 
 def check_state(type: str) -> bool:

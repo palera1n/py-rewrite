@@ -94,7 +94,6 @@ class Dependency:
 
     def run(self, args: list[str]) -> tuple[int, str]:
         cmd = f"{self.path()} {' '.join(args)}"
-        print(f"Running {self.filename}...")
         logger.debug(f"Running command: {cmd}", self.args.debug)
         
         status, output = sp.getstatusoutput(f"{cmd}")
@@ -250,7 +249,6 @@ class iBootPatcher:
         if boot_args is not None:
             cmd += f" {boot_args}"
         
-        print("Running iBoot64Patcher")
         logger.debug(f"Running command: {cmd}", self.args.debug)
         
         code, output = sp.getstatusoutput(f"{cmd}")
@@ -392,7 +390,6 @@ class Gaster:
         if type == "pwn":
             cmd = f"{self.path()} pwn"
             
-            print("Running gaster pwn")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -405,7 +402,6 @@ class Gaster:
         elif type == "reset":
             cmd = f"{self.path()} reset"
             
-            print("Running gaster reset")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -418,7 +414,6 @@ class Gaster:
         elif type == "decrypt":
             cmd = f"{self.path()} decrypt {decrypt_input} {decrypt_output}"
             
-            print("Running gaster decrypt")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -565,8 +560,7 @@ class irecovery:
     def run(self, type: str, file: Path = None, command: str = None) -> tuple[int, str]:
         if type == "info":
             cmd = f"{self.path()} -q"
-            
-            print("Running irecovery -q")
+
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -579,7 +573,6 @@ class irecovery:
         elif type == "file":
             cmd = f"{self.path()} -f {file}"
             
-            print("Running irecovery -f")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")
@@ -594,7 +587,6 @@ class irecovery:
         elif type == "cmd":
             cmd = f"{self.path()} -c {command}"
             
-            print("Running irecovery -c")
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
             code, output = sp.getstatusoutput(f"{cmd}")

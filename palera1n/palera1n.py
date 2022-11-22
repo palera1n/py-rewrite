@@ -6,6 +6,7 @@ from logger import colors
 from pathlib import Path
 from ramdisk import Ramdisk
 import logger
+import os
 import plistlib
 import requests
 import remotezip
@@ -81,12 +82,36 @@ class palera1n:
             logger.debug("irecovery not found in path", self.args.debug)
             irecovery(self.data_dir, self.args).download()
         
+        if (utils.check_is_connected() is not True):
+            logger.log("Waiting for devices...")
+        while (utils.check_is_connected() is not True):
+            time.sleep(1)
+        
         # Get device info, then debug log them
         if self.args.dfu:
             self.version = self.args.dfu
         else:
             self.version = utils.device_info("normal", "ProductVersion", self.data_dir, self.args)
+
+        if (self.version.startswith("15") is not True):
+            logger.error("Your device is not supported. (iOS 15.x required, currently running iOS {})".format(self.version))
+            sys.exit(1)
         
+        if (utils.device_info("normal", "CPUArchitecture", self.data_dir, self.args) == "arm64e"):
+            logger.error("Your device is not supported. (arm64e architecture detected)")
+            sys.exit(1)
+        
+        logger.log("Hello, {} on {}!".format(utils.device_info("normal", "ProductType", self.data_dir, self.args), self.version))
+        
+        if (utils.check_state('dfu') is not True):
+            logger.debug("NOT IN DFU", self.args.debug)
+            if (utils.check_state('recovery') is not True):
+                logger.log("Entering recovery mode...")
+                utils.enter_recovery(utils.device_info("normal", "UniqueDeviceID", self.data_dir, self.args))
+                utils.wait("recovery")
+                logger.log("Entered recovery mode.")
+            utils.guide_to_dfu(utils.device_info("recovery", "CPID", self.data_dir, self.args), utils.device_info("recovery", "PRODUCT", self.data_dir, self.args), self.data_dir, self.args)
+
         utils.wait("dfu")
         
         logger.log("Getting device info")
@@ -94,6 +119,8 @@ class palera1n:
         self.model = utils.device_info("recovery", "MODEL", self.data_dir, self.args)
         self.deviceid = utils.device_info("recovery", "PRODUCT", self.data_dir, self.args)
         logger.debug(f"CPID: {self.cpid}, MODEL: {self.model}, ID: {self.deviceid}", self.args.debug)
+
+        exit(0)
         
         # Check if the device is pwned already, if not, then use gaster
         if utils.check_pwned(self.data_dir, self.args) is False:
