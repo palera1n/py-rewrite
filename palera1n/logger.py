@@ -1,8 +1,6 @@
-#imports
 import os
 
-# fix windows up
-if os.name == 'nt':
+if os.name == 'nt':  # Only if we are running on Windows
     from ctypes import windll
     k = windll.kernel32
     k.SetConsoleMode(k.GetStdHandle(-11), 7)
@@ -35,19 +33,21 @@ colors = {
 }
 
 
-def log(message, color=colors["green"]):
-    print(colors["darkgrey"] + colors["bold"] + "[" + colors["reset"] + color + colors["bold"] + "*" + colors["reset"] + colors["darkgrey"] + colors["bold"] + "]" + colors["reset"] + f" {message}")
+def log(message, color=colors["yellow"]):
+    if color is None:
+        print("\n" + colors["bold"] + "[*] " + colors["reset"] + f"{message}" + colors["reset"])
+    else:
+        print("\n" + color + colors["bold"] + "[*] " + colors["reset"] + color + f"{message}" + colors["reset"])
 
 
 def debug(message, dbg):
     if dbg:
-        print(colors["darkgrey"] + colors["bold"] + "[" + colors["reset"] + colors["lightcyan"] + colors["bold"] + "^" + colors["reset"] + colors["darkgrey"] + colors["bold"] + "]" + colors["reset"] + f" {message}")
+        print(colors["lightcyan"] + colors["bold"] + "[DEBUG] " + colors["reset"] + colors["lightcyan"] + f"{message}" + colors["reset"])
 
 
 def error(message):
-    print(colors["darkgrey"] + colors["bold"] + "[" + colors["reset"] + colors["lightred"] + colors["bold"] + "!" + colors["reset"] + colors["darkgrey"] + colors["bold"] + "]" + colors["reset"] + f" {message}")
+    print(colors["lightred"] + colors["bold"] + "[!] " + colors["reset"] + colors["lightred"] + f"{message}" + colors["reset"])
 
 
 def ask(message):
-    return input(colors["darkgrey"] + colors["bold"] + "[" + colors["reset"] + colors["orange"] + colors["bold"] + "?" + colors["reset"] + colors["darkgrey"] + colors["bold"] + "]" + colors["reset"] + f" {message} >> ")
-    
+    return input(colors["orange"] + colors["bold"] + "[?] " + colors["reset"] + colors["orange"] + f"{message}" + colors["reset"])

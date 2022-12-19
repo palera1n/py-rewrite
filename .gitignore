@@ -161,3 +161,5 @@ cython_debug/
 
 .DS_Store
 */.DS_Store
+latest_build_num.txt
+latest_build_sha.txt

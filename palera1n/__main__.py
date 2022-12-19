@@ -1,7 +1,8 @@
 # imports
 import argparse
-import palera1n
-import utils
+
+from . import palera1n
+from . import utils
 
 
 def main(argv=None, in_package=None) -> None:
@@ -11,12 +12,12 @@ def main(argv=None, in_package=None) -> None:
     in_package = False if in_package is None else in_package
     
     parser = argparse.ArgumentParser()
+    parser.add_argument("version", help="iOS version if not starting from normal mode")
+
     parser.add_argument('-d', '--debug', action='store_true',
                         help="shows some debug info, only useful for testing")
     parser.add_argument('-i', '--ipsw', type=str,
                         help="specify IPSW url")
-    parser.add_argument('-D', '--dfu', type=str,
-                        help="use DFU mode")
     parser.add_argument('-r', '--rootless', action='version', version=f'Rootless is not implemented yet.', #type=str,
                         help="use rootless mode")
     parser.add_argument('-s', '--semi-tethered', action='store_true',

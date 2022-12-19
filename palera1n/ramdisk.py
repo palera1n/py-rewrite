@@ -1,13 +1,3 @@
-# imports
-from argparse import Namespace
-from deps import Gaster, iBootPatcher, irecovery
-from img4 import IMG4
-from paramiko.client import AutoAddPolicy, SSHClient
-from paramiko.ssh_exception import AuthenticationException, SSHException
-from pathlib import Path
-from pymobiledevice3 import usbmux
-from remotezip import RemoteZip
-import logger
 import os
 import plistlib
 import requests
@@ -17,8 +7,19 @@ import subprocess as sp
 import sys
 import tarfile
 import time
-import utils
 import zipfile
+
+from paramiko.client import AutoAddPolicy, SSHClient
+from paramiko.ssh_exception import AuthenticationException, SSHException
+from pathlib import Path
+from pymobiledevice3 import usbmux
+from remotezip import RemoteZip
+from argparse import Namespace
+
+from . import utils
+from . import logger
+from .deps import Gaster, iBootPatcher, irecovery, KernelPatcher
+from .img4 import IMG4
 
 
 class Ramdisk:
@@ -63,7 +64,7 @@ class Ramdisk:
                 logger.error("IPSW could not be fetched! Please supply one with --ipsw")
                 sys.exit(1)
             
-        if utils.check_pwned() is False:
+        if utils.check_pwned(self.data_dir, self.args) is False:
             print("Pwning device")
             Gaster(self.data_dir, self.args).run("pwn")
         
@@ -100,7 +101,8 @@ class Ramdisk:
         img4.im4p_to_img4((self.tmp / utils.get_path(identity, "DeviceTree")), (self.tmp / "devicetree.img4"), "rdtr")
 
         print("Patching kernel")
-        # todo: kernel64patcher kcache.raw kcache.patched -a
+        img4.im4p_to_raw((self.tmp / utils.get_path(identity, "kernelcache")), (self.tmp / "kcache.raw"))
+        KernelPatcher(self.data_dir, self.args).run((self.tmp / "kcache.raw"), (self.tmp / "kcache.patched"), amfi=True)
         img4.im4p_to_img4((self.tmp / "kcache.patched"), (self.tmp / "kernelcache.img4"), "rkrn")
         
         print("Packing trustcache")
@@ -111,7 +113,7 @@ class Ramdisk:
         
         # Download kpf zip
         try:
-            res = requests.get("https://nightly.link/palera1n/PongoOS/workflows/kpf/iOS15/Kernel15Patcher-iOS.zip", stream=True)
+            res = requests.get("https://nightly.link/palera1n/PongoOS/workflows/ci/iOS15/Kernel15Patcher.zip", stream=True)
             if res.status_code == 200:
                 with open("kpf.zip", "wb") as f:
                     f.write(res.content)
@@ -119,7 +121,7 @@ class Ramdisk:
                 logger.error(f"Provided URL is not reachable. Status code: {res.status_code}")
                 exit(1)
         except (requests.exceptions.NewConnectionError, ConnectionError, requests.exceptionsRequestException) as err:
-            logger.error(f"gaster versioning download URL is not reachable. Error: {err}")
+            logger.error(f"Kernel15Patcher versioning download URL is not reachable. Error: {err}")
         
         # Unzip kpf zip
         with zipfile.ZipFile("kpf.zip", 'r') as f:
@@ -137,9 +139,6 @@ class Ramdisk:
             shutil.move("Kernel15Patcher.ios", "/tmp/palera1n-ramdisk/sbin/kpf")
             Path("/tmp/palera1n-ramdisk/sbin/kpf").chmod(755)
             os.chown("/tmp/palera1n-ramdisk/sbin/kpf", 0, 0)
-            
-            # download and replace pogo
-            # we aren't going to do this yet since mineek can do ramdisk trollery
             
             utils.run("hdiutil detach -force /tmp/palera1n-ramdisk", self.args)
             utils.run(f"hdiutil resize -sectors min {self.tmp / 'ramdisk.dmg'}", self.args)

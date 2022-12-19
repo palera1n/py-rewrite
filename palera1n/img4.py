@@ -1,8 +1,8 @@
-# imports
-from argparse import Namespace
-from pathlib import Path
 import plistlib
 import pyimg4
+
+from argparse import Namespace
+from pathlib import Path
 
 
 class IMG4:
