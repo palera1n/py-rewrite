@@ -110,7 +110,7 @@ class palera1n:
             else:
                 logger.debug("iBootpatch2 not found in data dir", self.args.debug)
                 iBootpatch2(self.data_dir, self.args).download()
-        
+
         if utils.get_device_mode() == "none":
             logger.log("Waiting for devices...")
             

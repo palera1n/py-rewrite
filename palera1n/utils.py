@@ -28,65 +28,66 @@ def remove_log_stdout(toremove: str):
     for _ in range(len(toremove)):
         sys.stdout.write('\033[D \033[D')
         sys.stdout.flush()
+        
 
 def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
     """Guide the user to enter DFU mode"""
     log = "Get ready (3)"
-    colorway = logger.colors["darkgrey"] + logger.colors["bold"] + "[" + logger.colors["reset"] + logger.colors["green"] + logger.colors["bold"] + "*" + logger.colors["reset"] + logger.colors["darkgrey"] + logger.colors["bold"] + "]" + logger.colors["reset"] + " "
+    colorway = logger.colors["yellow"] + logger.colors["bold"] + "[*] " + logger.colors["reset"] + logger.colors["yellow"]
 
     logger.ask("Press enter when you're ready to enter DFU mode.")
     log_stdout(colorway + log)
     time.sleep(1)
-    remove_log_stdout(colorway + log)
+    remove_log_stdout(colorway + log + logger.colors["reset"])
 
     for i in range(2):
         i = i + 1
-        remove_log_stdout(colorway + log.replace("3", str(3 - i)))
-        log_stdout(colorway + log.replace("3", str(3 - i)))
+        remove_log_stdout(colorway + log.replace("3", str(3 - i)) + logger.colors["reset"])
+        log_stdout(colorway + log.replace("3", str(3 - i)) + logger.colors["reset"])
         time.sleep(1)
     
-    remove_log_stdout(colorway + log)
+    remove_log_stdout(colorway + log + logger.colors["reset"])
 
     if (cpid.startswith("0x801") and product.startswith('iPad') is not True):
         log = "Hold volume down + side button (4)"
     else:
         log = "Hold home + power button (4)"
 
-    log_stdout(colorway + log)
+    log_stdout(colorway + log + logger.colors["reset"])
     time.sleep(1)
-    remove_log_stdout(colorway + log)
+    remove_log_stdout(colorway + log + logger.colors["reset"])
 
     for i in range(3):
         i = i + 1
-        remove_log_stdout(colorway + log.replace("4", str(4 - i)))
-        log_stdout(colorway + log.replace("4", str(4 - i)))
+        remove_log_stdout(colorway + log.replace("4", str(4 - i)) + logger.colors["reset"])
+        log_stdout(colorway + log.replace("4", str(4 - i)) + logger.colors["reset"])
         if (i == 3):
             irecovery(data_dir, args).run(type="cmd", command="reset")
         else:
             time.sleep(1)
 
-    remove_log_stdout(colorway + log)
+    remove_log_stdout(colorway + log + logger.colors["reset"])
 
     if (cpid.startswith("0x801") and product.startswith('iPad') is not True):
         log = "Release side button, but keep holding volume down (10)"
     else:
         log = "Release power button, but keep holding home button (10)"
     
-    log_stdout(colorway + log)
+    log_stdout(colorway + log + logger.colors["reset"])
     time.sleep(1)
-    remove_log_stdout(colorway + log)
+    remove_log_stdout(colorway + log + logger.colors["reset"])
     
     for i in range(9):
         i = i + 1
-        remove_log_stdout(colorway + log.replace("10", str(10 - i)))
-        log_stdout(colorway + log.replace("10", str(10 - i)))
+        remove_log_stdout(colorway + log.replace("10", str(10 - i)) + logger.colors["reset"])
+        log_stdout(colorway + log.replace("10", str(10 - i)) + logger.colors["reset"])
         time.sleep(1)
     
     if utils.get_device_mode() != "dfu":
-        remove_log_stdout(colorway + log)
+        remove_log_stdout(colorway + log + logger.colors["reset"])
         logger.log("Successfully entered DFU mode.")
     else:
-        remove_log_stdout(colorway + log)
+        remove_log_stdout(colorway + log + logger.colors["reset"])
         logger.error("Failed to enter DFU mode. Try running the script again.")
         sys.exit(1)
 
