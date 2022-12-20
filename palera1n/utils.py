@@ -102,10 +102,7 @@ def enter_recovery(udid: str) -> None:
 
     command = os.getcwd() + "/palera1n/data/binaries/" + executable + " " + udid
 
-    status, output = sp.getstatusoutput(command)
-    if status != 0:
-        logger.error(f"An error occurred when running {command.split()[0]}: {output}")
-        sys.exit(1)
+    run(command)
         
 
 def fix_autoboot(data_dir: Path, args: Namespace) -> None:

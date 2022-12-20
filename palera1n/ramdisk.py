@@ -82,7 +82,7 @@ class Ramdisk:
             ipsw.extract(utils.get_path(identity, "iBSS"), path=self.tmp)
             ipsw.extract(utils.get_path(identity, "iBEC"), path=self.tmp)
             ipsw.extract(utils.get_path(identity, "DeviceTree"), path=self.tmp)
-            ipsw.extract(utils.get_path(identity, "kernelcache.release"), path=self.tmp)
+            ipsw.extract(utils.get_path(identity, "RestoreKernelCache"), path=self.tmp)
             ipsw.extract(utils.get_path(identity, "RestoreRamDisk"), path=self.tmp)
             ipsw.extract(utils.get_path(identity, "RestoreRamDisk") + ".trustcache", path=self.tmp)
             
@@ -101,7 +101,7 @@ class Ramdisk:
         img4.im4p_to_img4((self.tmp / utils.get_path(identity, "DeviceTree")), (self.tmp / "devicetree.img4"), "rdtr")
 
         print("Patching kernel")
-        img4.im4p_to_raw((self.tmp / utils.get_path(identity, "kernelcache")), (self.tmp / "kcache.raw"))
+        img4.im4p_to_raw((self.tmp / utils.get_path(identity, "RestoreKernelCache")), (self.tmp / "kcache.raw"))
         KernelPatcher(self.data_dir, self.args).run((self.tmp / "kcache.raw"), (self.tmp / "kcache.patched"), amfi=True)
         img4.im4p_to_img4((self.tmp / "kcache.patched"), (self.tmp / "kernelcache.img4"), "rkrn")
         

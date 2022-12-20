@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-iOS 15.0-15.7.1 work in progress, (semi-)tethered checkm8 "jailbreak"
+iOS 15.0-16.3 work in progress, (semi-)tethered checkm8 jailbreak
 </p>
 
 # This is a work in progress.

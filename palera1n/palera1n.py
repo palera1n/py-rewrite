@@ -66,7 +66,7 @@ class palera1n:
             logger.debug("iBoot64Patcher found in path!", self.args.debug)
         else:
             if iBootPatcher(self.data_dir, self.args).exists_in_data_dir():
-                logger.debug("iBoot64Patcher found!", self.args.debug)
+                logger.debug("iBoot64Patcher found in data dir!", self.args.debug)
             else:
                 logger.debug("iBoot64Patcher not found in data dir", self.args.debug)
                 iBootPatcher(self.data_dir, self.args).download()
@@ -76,7 +76,7 @@ class palera1n:
             logger.debug("gaster found in path!", self.args.debug)
         else:
             if Gaster(self.data_dir, self.args).exists_in_data_dir():
-                logger.debug("gaster found!", self.args.debug)
+                logger.debug("gaster found in data dir!", self.args.debug)
             else:
                 logger.debug("gaster not found in data dir", self.args.debug)
                 Gaster(self.data_dir, self.args).download()
@@ -86,7 +86,7 @@ class palera1n:
             logger.debug("irecovery found in path!", self.args.debug)
         else:
             if irecovery(self.data_dir, self.args).exists_in_data_dir():
-                logger.debug("irecovery found!", self.args.debug)
+                logger.debug("irecovery found in data dir!", self.args.debug)
             else:
                 logger.debug("irecovery not found in data dir", self.args.debug)
                 irecovery(self.data_dir, self.args).download()
@@ -96,7 +96,7 @@ class palera1n:
             logger.debug("Kernel64Patcher found in path!", self.args.debug)
         else:
             if KernelPatcher(self.data_dir, self.args).exists_in_data_dir():
-                logger.debug("Kernel64Patcher found!", self.args.debug)
+                logger.debug("Kernel64Patcher found in data dir!", self.args.debug)
             else:
                 logger.debug("Kernel64Patcher not found in data dir", self.args.debug)
                 KernelPatcher(self.data_dir, self.args).download()
@@ -106,7 +106,7 @@ class palera1n:
             logger.debug("iBootpatch2 found in path!", self.args.debug)
         else:
             if iBootpatch2(self.data_dir, self.args).exists_in_data_dir():
-                logger.debug("iBootpatch2 found!", self.args.debug)
+                logger.debug("iBootpatch2 found in data dir!", self.args.debug)
             else:
                 logger.debug("iBootpatch2 not found in data dir", self.args.debug)
                 iBootpatch2(self.data_dir, self.args).download()
