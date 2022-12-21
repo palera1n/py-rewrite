@@ -130,7 +130,7 @@ class palera1n:
                 logger.error("You must specify an iOS version when not starting from normal mode.")
                 sys.exit(1)
 
-        if self.version.startswith("15") is not True or self.version.startswith("16") is not True:
+        if not self.version.startswith("15") is True or self.version.startswith("16") is True:
             logger.error(f"Your device is not supported. (iOS 15.x-16.x required, currently running iOS {self.version})")
             sys.exit(1)
         
@@ -139,9 +139,9 @@ class palera1n:
                 logger.error("Your device is not supported. (arm64e architecture detected)")
                 sys.exit(1)
         
-            logger.log(f"Hello, {utils.device_info('normal', 'ProductType', self.data_dir, self.args)} on {self.version}!")
+            print(f"Hello, {utils.device_info('normal', 'ProductType', self.data_dir, self.args)} on {self.version}!")
         else:
-            logger.log(f"Hello, {utils.device_info('recovery', 'PRODUCT', self.data_dir, self.args)} on {self.version}!")
+            print(f"Hello, {utils.device_info('recovery', 'PRODUCT', self.data_dir, self.args)} on {self.version}!")
         
         if utils.get_device_mode() != "dfu":
             if utils.get_device_mode() != "recovery":
@@ -189,6 +189,8 @@ class palera1n:
                 
                 rd.create("15.6.1" if self.version.startswith("15.7") else ("16.0.3" if self.version.startswith("16") else self.version), rootless=False) #True if self.args.rootless else False)
                 rd.boot()
+                print("rd booted, hopefully")
+                sys.exit(0)
                 
                 if self.args.restore_rootfs:
                     rd.restore_rootfs()

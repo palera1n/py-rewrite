@@ -221,7 +221,7 @@ class iBootPatcher:
             cmd += " -l"
         
         if boot_args is not None:
-            cmd += f" {boot_args}"
+            cmd += f" -b \"{boot_args}\""
         
         logger.debug(f"Running command: {cmd}", self.args.debug)
         
@@ -549,7 +549,7 @@ class irecovery:
                 logger.error(f'Failed to run irecovery: {output}')
                 sys.exit(1)
             
-            time.sleep(1)
+            time.sleep(5)
             
             return code, output
         elif type == "cmd":
@@ -563,7 +563,7 @@ class irecovery:
                 logger.error(f'Failed to run irecovery: {output}')
                 sys.exit(1)
             
-            time.sleep(1)
+            time.sleep(5)
             
             return code, output
 

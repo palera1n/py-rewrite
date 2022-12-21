@@ -83,9 +83,9 @@ def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
         log_stdout(colorway + log.replace("10", str(10 - i)) + logger.colors["reset"])
         time.sleep(1)
     
-    if utils.get_device_mode() != "dfu":
+    if get_device_mode() == "dfu":
         remove_log_stdout(colorway + log + logger.colors["reset"])
-        logger.log("Successfully entered DFU mode.")
+        print("Successfully entered DFU mode.")
     else:
         remove_log_stdout(colorway + log + logger.colors["reset"])
         logger.error("Failed to enter DFU mode. Try running the script again.")

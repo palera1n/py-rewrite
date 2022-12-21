@@ -8,6 +8,7 @@ import sys
 import tarfile
 import time
 import zipfile
+import pyimg4
 
 from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
@@ -84,29 +85,30 @@ class Ramdisk:
             ipsw.extract(utils.get_path(identity, "DeviceTree"), path=self.tmp)
             ipsw.extract(utils.get_path(identity, "RestoreKernelCache"), path=self.tmp)
             ipsw.extract(utils.get_path(identity, "RestoreRamDisk"), path=self.tmp)
-            ipsw.extract(utils.get_path(identity, "RestoreRamDisk") + ".trustcache", path=self.tmp)
+            ipsw.extract(f"Firmware/{utils.get_path(identity, 'RestoreRamDisk')}.trustcache", path=self.tmp)
+            logger.debug(os.listdir(self.tmp), self.args.debug)
             
         img4 = IMG4(self.args, self.in_package, rd_shsh, self.data_dir, self.tmp)
             
         print("Patching iBSS and iBEC")
-        Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBSS").replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBSS.dec"))
+        Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBSS")), decrypt_output=(self.tmp / "iBSS.dec"))
         iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBSS.dec"), (self.tmp / "iBSS.patched"))
         img4.im4p_to_img4((self.tmp / "iBSS.patched"), (self.tmp / "iBSS.img4"), "ibss")
         
-        Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBEC").replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBEC.dec"))
-        iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBEC.dec"), (self.tmp / "iBEC.patched"), nvram_unlock=True, boot_args=f"rd=md0 wdt=-1{' -restore' if self.cpid in ('0x8960', '0x7000', '0x7001') else ''}")
+        Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBEC")), decrypt_output=(self.tmp / "iBEC.dec"))
+        iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBEC.dec"), (self.tmp / "iBEC.patched"), nvram_unlock=True, boot_args=f"serial=3 rd=md0 wdt=-1{' -restore' if self.cpid in ('0x8960', '0x7000', '0x7001') else ''}")
         img4.im4p_to_img4((self.tmp / "iBEC.patched"), (self.tmp / "iBEC.img4"), "ibec")
 
         print("Packing DeviceTree")
         img4.im4p_to_img4((self.tmp / utils.get_path(identity, "DeviceTree")), (self.tmp / "devicetree.img4"), "rdtr")
 
         print("Patching kernel")
-        img4.im4p_to_raw((self.tmp / utils.get_path(identity, "RestoreKernelCache")), (self.tmp / "kcache.raw"))
+        img4.im4p_to_raw((self.tmp / utils.get_path(identity, "RestoreKernelCache")), (self.tmp / "kcache.raw"), compressed=True)
         KernelPatcher(self.data_dir, self.args).run((self.tmp / "kcache.raw"), (self.tmp / "kcache.patched"), amfi=True)
-        img4.im4p_to_img4((self.tmp / "kcache.patched"), (self.tmp / "kernelcache.img4"), "rkrn")
+        img4.im4p_to_img4((self.tmp / "kcache.patched"), (self.tmp / "kernelcache.img4"), "rkrn", compression=pyimg4.Compression.LZSS)
         
         print("Packing trustcache")
-        img4.im4p_to_img4((self.tmp / utils.get_path(identity, "RestoreRamDisk") + ".trustcache"), (self.tmp / "trustcache.img4"), "rtsc")
+        img4.im4p_to_img4((self.tmp / f"Firmware/{utils.get_path(identity, 'RestoreRamDisk')}.trustcache"), (self.tmp / "trustcache.img4"), "rtsc")
 
         print("Creating ramdisk dmg")
         img4.im4p_to_raw((self.tmp / utils.get_path(identity, "RestoreRamDisk")), (self.tmp / "ramdisk.dmg"))
@@ -138,7 +140,9 @@ class Ramdisk:
             
             shutil.move("Kernel15Patcher.ios", "/tmp/palera1n-ramdisk/sbin/kpf")
             Path("/tmp/palera1n-ramdisk/sbin/kpf").chmod(755)
-            os.chown("/tmp/palera1n-ramdisk/sbin/kpf", 0, 0)
+            logger.debug(os.listdir("/tmp/palera1n-ramdisk/sbin"), self.args.debug)
+            #utils.run("chown 0 /tmp/palera1n-ramdisk/sbin/kpf", self.args)
+            #os.chown("/tmp/palera1n-ramdisk/sbin/kpf", 0, 0)
             
             utils.run("hdiutil detach -force /tmp/palera1n-ramdisk", self.args)
             utils.run(f"hdiutil resize -sectors min {self.tmp / 'ramdisk.dmg'}", self.args)

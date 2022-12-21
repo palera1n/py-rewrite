@@ -18,7 +18,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pyimg4 = "^0.6.2"
+pyimg4 = "^0.7"
 pymobiledevice3 = "^1.29.3"
 remotezip = "^0.9.4"
 paramiko = "^2.12.0"
