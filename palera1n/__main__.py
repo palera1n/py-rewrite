@@ -1,36 +1,74 @@
-# imports
-import argparse
+import platform
+import sys
+from typing import Optional
 
-from . import palera1n, utils
+import click
+
+from palera1n import __version__, Device
 
 
-def main(argv=None, in_package=None) -> None:
-    if argv is None:
-        in_package = True
+@click.command()
+@click.argument(
+    'version',
+    type=str,
+    required=True,
+)
+@click.version_option(None, '-v', message=f'Palera1n {__version__}')
+@click.option('-u', '--url', 'url', type=str, help='URL of IPSW file.')
+@click.option(
+    '-r',
+    '--rootless',
+    'rootless',
+    is_flag=True,
+    help='Rootless jailbreak (meant for iOS 15+).',
+)
+@click.option(
+    '-s',
+    '--semi-tethered',
+    'semi_tethered',
+    is_flag=True,
+    help='Semi-tethered jailbreak.',
+)
+@click.option(
+    '--restore-rootfs',
+    'restore_rootfs',
+    is_flag=True,
+    help='Restore root filesystem (effectively unjailbreaking the device).',
+)
+@click.option(
+    '--serial',
+    'serial',
+    is_flag=True,
+    help='Add required boot-args for serial logging.',
+)
+@click.option(
+    '-V',
+    '--verbose',
+    'verbose',
+    is_flag=True,
+    help='Increase verbosity.',
+)
+def main(
+    version: str,
+    url: Optional[str],
+    rootless: bool,
+    semi_tethered: bool,
+    restore_rootfs: bool,
+    serial: bool,
+    verbose: bool,
+) -> None:
+    '''An iOS 15.0-16.2 (semi-)tethered checkm8 jailbreak.'''
 
-    in_package = False if in_package is None else in_package
-    
-    parser = argparse.ArgumentParser()
-    parser.add_argument("version", nargs='?', help="iOS version if not starting from normal mode")
+    if not verbose:
+        sys.tracebacklimit = 0
 
-    parser.add_argument('-d', '--debug', action='store_true',
-                        help="shows some debug info, only useful for testing")
-    parser.add_argument('-i', '--ipsw', type=str,
-                        help="specify IPSW url")
-    parser.add_argument('-r', '--rootless', action='version', version=f'Rootless is not implemented yet.', #type=str,
-                        help="use rootless mode")
-    parser.add_argument('-s', '--semi-tethered', action='store_true',
-                        help="semi-tether a tethered install")
-    parser.add_argument('-R', '--restore-rootfs', action='store_true',
-                        help="restore rootfs on (semi-)tethered")
-    parser.add_argument('-S', '--serial', action='store_true',
-                        help="add serial=3 to bootargs for serial output")
-    parser.add_argument('-v', '--version', action='version', version=f'palera1n v{utils.get_version()}',
-                        help='show current version and exit')
-    args = parser.parse_args()
+    if platform.system() == 'Windows':
+        click.echo('[ERROR] Windows systems are not supported. Exiting.')
+        return
 
-    pr = palera1n.palera1n(in_package, args)
-    pr.main()
+    click.echo('Attempting to connect to device...')
+    device = Device.find_device()
+    click.echo(f'Device found! Mode: {device.mode}')
 
 
 if __name__ == "__main__":
