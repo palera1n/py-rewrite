@@ -1,22 +1,22 @@
 import platform
-import requests
 import shutil
 import subprocess as sp
 import sys
 import tarfile
 import time
 import zipfile
-
 from argparse import Namespace
 from glob import glob
 from pathlib import Path
-from requests.exceptions import RequestException, ConnectionError
 from typing import Union
+
+import requests
+from requests.exceptions import ConnectionError, RequestException
 from urllib3.exceptions import NewConnectionError
 
-from . import utils
-from . import logger
+from . import logger, utils
 from .logger import colors
+
 
 class Dependency:
     def __init__(self, args: Namespace):

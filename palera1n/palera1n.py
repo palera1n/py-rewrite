@@ -1,18 +1,17 @@
 import os
 import plistlib
-import requests
-import remotezip
 import subprocess as sp
 import sys
 import tempfile
 import time
-
-from pathlib import Path
 from argparse import Namespace
+from pathlib import Path
 
-from . import utils
-from . import logger
-from .deps import iBootPatcher, Gaster, irecovery, iBootpatch2, KernelPatcher
+import remotezip
+import requests
+
+from . import logger, utils
+from .deps import Gaster, KernelPatcher, iBootpatch2, iBootPatcher, irecovery
 from .img4 import IMG4
 from .logger import colors
 from .ramdisk import Ramdisk

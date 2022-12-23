@@ -1,8 +1,7 @@
 # imports
 import argparse
 
-from . import palera1n
-from . import utils
+from . import palera1n, utils
 
 
 def main(argv=None, in_package=None) -> None:

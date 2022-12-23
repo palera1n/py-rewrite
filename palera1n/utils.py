@@ -1,19 +1,19 @@
 import importlib
 import os
-import pkg_resources
 import platform
+import re
 import shutil
 import subprocess as sp
 import sys
 import time
-import re
-
 from argparse import Namespace
-from paramiko.client import SSHClient
 from pathlib import Path
+from typing import Union
+
+import pkg_resources
+from paramiko.client import SSHClient
 from pymobiledevice3.exceptions import NoDeviceConnectedError
 from pymobiledevice3.lockdown import LockdownClient
-from typing import Union
 
 from . import logger
 from .deps import irecovery

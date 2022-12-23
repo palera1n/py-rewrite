@@ -1,6 +1,5 @@
 import os
 import plistlib
-import requests
 import shutil
 import string
 import subprocess as sp
@@ -8,18 +7,18 @@ import sys
 import tarfile
 import time
 import zipfile
-import pyimg4
+from argparse import Namespace
+from pathlib import Path
 
+import pyimg4
+import requests
 from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import AuthenticationException, SSHException
-from pathlib import Path
 from pymobiledevice3 import usbmux
 from remotezip import RemoteZip
-from argparse import Namespace
 
-from . import utils
-from . import logger
-from .deps import Gaster, iBootPatcher, irecovery, KernelPatcher
+from . import logger, utils
+from .deps import Gaster, KernelPatcher, iBootPatcher, irecovery
 from .img4 import IMG4
 
 

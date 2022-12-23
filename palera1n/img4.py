@@ -1,8 +1,8 @@
 import plistlib
-import pyimg4
-
 from argparse import Namespace
 from pathlib import Path
+
+import pyimg4
 
 
 class IMG4:
