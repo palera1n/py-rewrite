@@ -1,5 +1,5 @@
 from importlib.metadata import version
 
-from palera1n import palera1n
+from .device import Device
 
 __version__ = version(__package__)
