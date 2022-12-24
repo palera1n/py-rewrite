@@ -1,10 +1,13 @@
+import time
+from pathlib import Path
 from typing import Optional
 
 import usb
 import usb.backend.libusb1
 from pymobiledevice3.irecv import IRecv, Mode
-import time
-from pathlib import Path
+
+from .errors import DeviceNotFound
+
 
 class _IRecv(IRecv):
     def _get_backend(self) -> str:
@@ -29,7 +32,7 @@ class _IRecv(IRecv):
 
         raise usb.core.NoBackendError('No backend available')
 
-    def _find(self, ecid=None, timeout=0xffffffff, is_recovery=None):
+    def _find(self, ecid=None, timeout=0xFFFFFFFF, is_recovery=None):
         start = time.time()
         end = start + timeout
         while (self._device is None) and (time.time() < end):
@@ -49,7 +52,9 @@ class _IRecv(IRecv):
                         continue
 
                     if self._device is not None:
-                        raise Exception('More then one connected device was found connected in recovery mode')
+                        raise Exception(
+                            'More than one connected device was found connected in recovery mode'
+                        )
                     self._device = device
                     self.mode = mode
                     self._populate_device_info()
@@ -63,11 +68,12 @@ class _IRecv(IRecv):
                 except ValueError:
                     continue
 
+
 # TODO: Update to remove dfu/recovery mode requirement
 class Device:
     def __init__(self, device: _IRecv):
         if not isinstance(device, _IRecv):
-            raise TypeError(f"Expected _IRecv, got {type(device).__name__}")
+            raise TypeError(f'Expected _IRecv, got {type(device).__name__}')
 
         self._device = device
 
@@ -75,10 +81,13 @@ class Device:
 
     @classmethod
     def find_device(cls, ecid: Optional[int] = None):
-        if isinstance(ecid, int):
-            return cls(_IRecv(ecid=hex(ecid)[2:].upper()))
-        else:
-            return cls(_IRecv())
+        try:
+            if ecid is not None:
+                return cls(_IRecv(ecid=ecid))
+            else:
+                return cls(_IRecv())
+        except:
+            raise DeviceNotFound()
 
     @property
     def mode(self) -> str:
@@ -86,6 +95,9 @@ class Device:
 
     def send_data(self, data: bytes) -> None:
         if not isinstance(data, bytes):
-            raise TypeError(f"Expected bytes, got {type(data).__name__}")
+            raise TypeError(f'Expected bytes, got {type(data).__name__}')
 
         self._device.send_buffer(data)
+
+    def reset(self):
+        self._device.reset()
