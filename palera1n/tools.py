@@ -6,7 +6,7 @@ from typing import Optional
 from pyimg4 import Keybag
 from .errors import DependencyNotFound, PatchFailed, PwnFailed, ToolFailed, ToolOutdated
 
-
+# TODO: Write _Tool subclasses for Kernel64Patcher and iBootpatch2
 class _Tool:
     def __init__(self, binary: str) -> None:
         self._name = self._check_path(binary)
