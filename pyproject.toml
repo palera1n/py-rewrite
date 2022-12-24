@@ -28,6 +28,17 @@ pyusb = "^1.2.1"
 [tool.poetry.scripts]
 palera1n = 'palera1n.__main__:main'
 
+[tool.poetry.group.dev.dependencies]
+black = "^22.12.0"
+isort = "^5.11.4"
+
+[tool.black]
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+src_paths = ["palera1n"]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
