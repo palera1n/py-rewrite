@@ -1,8 +1,11 @@
 import subprocess
 from shutil import which
-
-from .errors import ToolFailed, DependencyNotFound, PatchFailed
 from tempfile import NamedTemporaryFile
+from typing import Optional
+
+from pyimg4 import Keybag
+from .errors import DependencyNotFound, PatchFailed, PwnFailed, ToolFailed, ToolOutdated
+
 
 class _Tool:
     def __init__(self, binary: str) -> None:
@@ -14,15 +17,26 @@ class _Tool:
 
         return binary
 
-    def _run(self, *args: list[str]) -> str:
+    def _run(self, *args: list[Optional[str]], timeout: Optional[int] = None) -> str:
         try:
-            return subprocess.check_output([self._name, *args], stderr=subprocess.STDOUT, universal_newlines=True)
+            return subprocess.check_output(
+                [self._name, *args],
+                stderr=subprocess.STDOUT,
+                universal_newlines=True,
+                timeout=timeout,
+            )
         except subprocess.CalledProcessError as e:
             raise ToolFailed(self._name) from e
 
+
 class iBoot64Patcher(_Tool):
+    def __init__(self) -> None:
+        super().__init__('iBoot64Patcher')
+
     def patch(self, input_: bytes) -> bytes:
-        with NamedTemporaryFile(mode='wb') as input_file, NamedTemporaryFile(mode='rb') as output_file:
+        with NamedTemporaryFile(mode='wb') as input_file, NamedTemporaryFile(
+            mode='rb'
+        ) as output_file:
             input_file.write(input_)
 
             try:
@@ -31,6 +45,32 @@ class iBoot64Patcher(_Tool):
             except ToolFailed as e:
                 raise PatchFailed(self._name) from e
 
-    
     def get_version(self) -> str:
         return self._run('--version')
+
+
+class Gaster(_Tool):
+    def __init__(self) -> None:
+        super().__init__('gaster')
+
+    def pwn(self) -> None:
+        try:
+            self._run('pwn', timeout=3)
+        except subprocess.TimeoutExpired as e:
+            raise PwnFailed(self._name) from e
+
+    def decrypt_keybag(self, keybag: Keybag) -> Keybag:
+        try:
+            self._run()
+        except subprocess.CalledProcessError as e:
+            if 'decrypt_kbag' not in e.output:
+                raise ToolOutdated(self._name)
+
+        gaster_kbag = self.run[
+            'gaster', 'decrypt_kbag', (keybag.iv + keybag.key).hex()
+        ].splitlines()[-1]
+
+        return Keybag(
+            iv=bytes.fromhex(gaster_kbag.split('IV: ')[1].split(',')[0]),
+            key=bytes.fromhex(gaster_kbag.split('key: ')[1]),
+        )
