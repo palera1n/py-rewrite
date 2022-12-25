@@ -42,7 +42,7 @@ class ManifestIdentity:
         return int(self._data['ApChipID'], 16)
 
     @property
-    def images(self) -> list[ManfiestImage]:
+    def images(self) -> list[ManifestImage]:
         return self._images
 
     @property
