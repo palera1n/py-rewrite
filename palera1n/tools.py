@@ -4,26 +4,37 @@ from tempfile import NamedTemporaryFile
 from typing import Optional
 
 from pyimg4 import Keybag
+
 from .errors import DependencyNotFound, PatchFailed, PwnFailed, ToolFailed, ToolOutdated
+
 
 # TODO: Write _Tool subclasses for Kernel64Patcher and iBootpatch2
 class _Tool:
     def __init__(self, binary: str) -> None:
-        self._name = self._check_path(binary)
+        self._name = binary
+        self._path = self._check_path(binary)
 
     def _check_path(self, binary: str) -> str:
-        if which(binary) is None:
+        path = which(binary)
+        if path is None:
             raise DependencyNotFound(binary)
 
-        return binary
+        return path
 
-    def _run(self, *args: list[Optional[str]], timeout: Optional[int] = None) -> str:
+    def _run(
+        self,
+        *args: list[Optional[str]],
+        timeout: Optional[int] = None,
+        env: Optional[dict[str, str]] = None
+    ) -> str:
         try:
             return subprocess.check_output(
-                [self._name, *args],
+                executable=self._path,
+                args=[self._name, *args],
                 stderr=subprocess.STDOUT,
                 universal_newlines=True,
                 timeout=timeout,
+                env=env,
             )
         except subprocess.CalledProcessError as e:
             raise ToolFailed(self._name) from e
