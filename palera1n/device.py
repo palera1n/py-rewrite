@@ -5,7 +5,7 @@ from typing import Optional
 import usb
 import usb.backend.libusb1
 from pymobiledevice3.irecv import IRecv, Mode
-
+from functools import cached_property
 from .errors import DeviceNotFound
 
 
@@ -79,6 +79,9 @@ class Device:
 
         self._device.reset()
 
+    def __del__(self) -> None:
+        usb.util.release_interface(self._device._device, 1)
+
     @classmethod
     def find_device(cls, ecid: Optional[int] = None):
         try:
@@ -89,9 +92,37 @@ class Device:
         except:
             raise DeviceNotFound()
 
-    @property
+    @cached_property
+    def board_config(self):
+        return self._device.hardware_model
+
+    @cached_property
+    def board_id(self) -> int:
+        return self._device.board_id
+
+    @cached_property
+    def chip_id(self) -> int:
+        return self._device.chip_id
+
+    @cached_property
+    def display_name(self) -> str:
+        return self._device.display_name
+
+    @cached_property
+    def ecid(self) -> int:
+        return self._device.ecid
+
+    @cached_property
+    def identifier(self) -> str:
+        return self._device.product_type
+
+    @cached_property
     def mode(self) -> str:
         return self._device.mode
+
+    @cached_property
+    def pwned(self) -> bool:
+        return 'PWND' in self._device._device_info.keys()
 
     def send_data(self, data: bytes) -> None:
         if not isinstance(data, bytes):
