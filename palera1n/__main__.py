@@ -1,6 +1,7 @@
 import platform
 import sys
 import time
+from collections import namedtuple
 from typing import Optional
 
 import click
@@ -8,28 +9,32 @@ import click
 from palera1n import Device, __version__
 from palera1n.errors import *
 
+Version = namedtuple('Version', ['major', 'minor', 'patch'])
 
-class Version(click.ParamType):
+
+class VersionType(click.ParamType):
     name = 'version'
 
     def convert(self, value: str, param: click.Parameter, ctx: click.Context):
         split_values = value.split('.')
-        if not 2 <= len(split_values) <= 3:
+        if len(split_values) == 2:
+            split_values.append(0)
+        elif len(split_values) != 3:
             self.fail(f"'{value}' is not a valid version", param, ctx)
 
-        for i in split_values:
+        for i, item in enumerate(split_values):
             try:
-                int(i)
+                split_values[i] = int(item)
             except ValueError:
                 self.fail(f"'{value}' is not a valid version", param, ctx)
 
-        return split_values
+        return Version(*split_values)
 
 
 @click.command()
 @click.argument(
     'version',
-    type=Version(),
+    type=VersionType(),
     required=True,
 )
 @click.version_option(None, '-v', message=f'Palera1n {__version__}')
@@ -68,7 +73,7 @@ class Version(click.ParamType):
     help='Increase verbosity.',
 )
 def main(
-    version: str,
+    version: Version,
     url: Optional[str],
     rootless: bool,
     semi_tethered: bool,
@@ -84,7 +89,13 @@ def main(
     if not verbose:
         sys.tracebacklimit = 0
 
-    # TODO: ensure either ios 15/16
+    if version.major not in (15, 16):
+        click.secho('[ERROR] Only iOS 15 and 16 are supported. Exiting.', fg='red')
+        return
+
+    if version.major == 16 and version.minor > 3:
+        click.secho('[ERROR] iOS 16.4 and above are not supported. Exiting.', fg='red')
+        return
 
     if platform.system() == 'Windows':
         click.secho('[ERROR] Windows systems are not supported. Exiting.', fg='red')
