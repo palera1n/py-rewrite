@@ -4,11 +4,12 @@ import time
 from typing import Optional
 
 import click
+from pymobiledevice3.exceptions import IRecvNoDeviceConnectedError
 
 from palera1n import Device, __version__
+from palera1n._types import Version
 from palera1n.errors import *
 from palera1n.tools import *
-from palera1n._types import Version
 
 
 class VersionType(click.ParamType):
@@ -111,7 +112,7 @@ def main(
         try:
             device = Device.find_device(ecid=0x44524108BC226)
             break
-        except DeviceNotFound:
+        except IRecvNoDeviceConnectedError:
             connection_attempts += 1
             time.sleep(1)
     else:

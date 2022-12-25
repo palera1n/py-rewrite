@@ -7,8 +7,6 @@ import usb
 import usb.backend.libusb1
 from pymobiledevice3.irecv import IRecv, Mode
 
-from .errors import DeviceNotFound
-
 
 class _IRecv(IRecv):
     def _get_backend(self) -> str:
@@ -84,14 +82,11 @@ class Device:
         usb.util.release_interface(self._device._device, 1)
 
     @classmethod
-    def find_device(cls, ecid: Optional[int] = None):
-        try:
-            if ecid is not None:
-                return cls(_IRecv(ecid=ecid))
-            else:
-                return cls(_IRecv())
-        except:
-            raise DeviceNotFound()
+    def find_device(cls, ecid: Optional[int] = None) -> 'Device':
+        if ecid is not None:
+            return cls(_IRecv(ecid=ecid))
+        else:
+            return cls(_IRecv())
 
     @cached_property
     def board_config(self):

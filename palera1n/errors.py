@@ -1,20 +1,21 @@
 from subprocess import CalledProcessError
 from typing import NoReturn
 
+from requests import Response
+
 
 class Palera1nError(Exception):
     pass
 
 
+class APIError(Palera1nError):
+    def __init__(self, name: str, response: Response) -> NoReturn:
+        super().__init__(
+            f'{name} API (URL: {response.url}) returned status code: {response.status_code}'
+        )
+
+
 class DeviceError(Palera1nError):
-    pass
-
-
-class DeviceNotSupported(Palera1nError):
-    pass
-
-
-class DeviceNotFound(Palera1nError):
     pass
 
 
