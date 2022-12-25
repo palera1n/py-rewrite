@@ -1,11 +1,12 @@
 import time
+from functools import cached_property
 from pathlib import Path
 from typing import Optional
 
 import usb
 import usb.backend.libusb1
 from pymobiledevice3.irecv import IRecv, Mode
-from functools import cached_property
+
 from .errors import DeviceNotFound
 
 
