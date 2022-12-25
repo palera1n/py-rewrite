@@ -1,7 +1,6 @@
 import platform
 import sys
 import time
-from collections import namedtuple
 from typing import Optional
 
 import click
@@ -9,8 +8,7 @@ import click
 from palera1n import Device, __version__
 from palera1n.errors import *
 from palera1n.tools import *
-
-Version = namedtuple('Version', ['major', 'minor', 'patch'])
+from palera1n._types import Version
 
 
 class VersionType(click.ParamType):
