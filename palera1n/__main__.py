@@ -8,6 +8,7 @@ import click
 
 from palera1n import Device, __version__
 from palera1n.errors import *
+from palera1n.tools import *
 
 Version = namedtuple('Version', ['major', 'minor', 'patch'])
 
@@ -101,13 +102,16 @@ def main(
         click.secho('[ERROR] Windows systems are not supported. Exiting.', fg='red')
         return
 
-    # TODO: Ensure iBoot64Patcher, gaster, iBootpatch2, and Kernel64Patcher are available
+    gaster = Gaster()
+    # ib64_p = iBoot64Patcher()
+    # k64_p = Kernel64Patcher()
+    # ib_p2 = iBootpatch2()
 
     click.echo('Attempting to connect to device...')
     connection_attempts = 0
     while connection_attempts < 5:
         try:
-            device = Device.find_device(ecid=1201921105576486)
+            device = Device.find_device(ecid=0x44524108BC226)
             break
         except DeviceNotFound:
             connection_attempts += 1
@@ -116,11 +120,43 @@ def main(
         click.secho('[ERROR] No device was found in 5 seconds. Exiting.', fg='red')
         return
 
-    click.secho(f'Connected to device, mode: {device.mode.name}', bold=True)
+    click.secho(
+        f"Connected to device: {device.display_name}, mode: {'Recovery' if device.mode.is_recovery else 'DFU'}",
+        bold=True,
+    )
 
-    # TODO: ensure device is 64-bit + checkm8 vulnerable
+    if device.chip_id not in [
+        0x8960,  # A7
+        0x7000,  # A8
+        0x7001,  # A8X
+        0x8000,  # A9 (Samsung)
+        0x8001,  # A9X
+        0x8003,  # A9 (TSMC)
+        0x8010,  # A10
+        0x8011,  # A10X
+        0x8015,  # A11
+    ]:
+        click.secho('[ERROR] Unsupported device. Exiting.', fg='red')
+        return
 
-    # TODO: check if device is pwned, if not run gaster
+    if device.mode.is_recovery:
+        click.secho('[ERROR] Device must be in DFU mode. Exiting.', fg='red')
+        return
+
+    if device.pwned == False:
+        click.secho('Device is not pwned. Running gaster...')
+
+        ecid = device.ecid
+        del device
+
+        gaster.pwn()
+
+        device = Device.find_device(ecid=ecid)
+
+    else:
+        click.secho(
+            'Device is already pwned (assuming sigchecks have been patched as well). Continuing...'
+        )
 
 
 '''
