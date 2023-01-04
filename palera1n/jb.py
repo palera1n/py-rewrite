@@ -148,7 +148,7 @@ class Jailbreak:
             cmd = f"{cmd} -k {pongo}"
             
         if boot_args != None:
-            cmd = f"{cmd} -e {boot_args}"
+            cmd = f"{cmd} -e \"{boot_args}\""
             
         if force_revert != None:
             cmd = f"{cmd} --force-revert"
