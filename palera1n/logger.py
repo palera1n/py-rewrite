@@ -33,11 +33,11 @@ colors = {
 }
 
 
-def log(message, color=colors["yellow"]):
+def log(message, color=colors["yellow"], nln=True):
     if color is None:
-        print("\n" + colors["bold"] + "[*] " + colors["reset"] + f"{message}" + colors["reset"])
+        print("\n" if nln else "" + colors["bold"] + "[*] " + colors["reset"] + f"{message}" + colors["reset"])
     else:
-        print("\n" + color + colors["bold"] + "[*] " + colors["reset"] + color + f"{message}" + colors["reset"])
+        print("\n" if nln else "" + color + colors["bold"] + "[*] " + colors["reset"] + color + f"{message}" + colors["reset"])
 
 
 def debug(message, dbg):

@@ -92,17 +92,10 @@ def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
         sys.exit(1)
 
 
-def enter_recovery(udid: str) -> None:
+def enter_recovery() -> None:
     """Enter recovery mode"""
-    executable = ""
-    if is_macos():
-        executable = "Darwin/ideviceenterrecovery"
-    else:
-        executable = "Linux/ideviceenterrecovery"
-
-    command = os.getcwd() + "/palera1n/data/binaries/" + executable + " " + udid
-
-    run(command)
+    with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
+        lockdown.enter_recovery()
         
 
 def fix_autoboot(data_dir: Path, args: Namespace) -> None:
