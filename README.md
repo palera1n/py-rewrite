@@ -41,11 +41,11 @@ Please, please, please, provide necessary info:
 
 # What does this do?
 
-It boots the device with AMFI patches. On first run, it'll boot a ramdisk which dumps your onboard blob, and installs Sileo and Substitute.
+It boots the device with patches for the jailbreak.
 
-**WARNING 1**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
+**WARNING**: I am NOT responsible for any data loss. The user of this program accepts responsibility should something happen to their device. While nothing should happen, jailbreaking has risks in itself. If your device is stuck in recovery, please run `futurerestore --exit-recovery`, or use `irecovery -n`.
 
-On A10 and A11, you **must disable your passcode while in the jailbroken state**. On A10, this can be fixed in the future by implementing blackbird. On A11, we don't have a SEP exploit yet.
+On A11, you **must disable your passcode while in the jailbroken state**. We don't have an A11 SEP exploit yet.
 
 # Prerequisites
 
@@ -53,7 +53,7 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
     - You must install the Tips app from the App Store before running the script
 2. Linux or macOS computer
     - Python 3 is required
-3. iOS 15.0-15.7.1
+3. iOS 15.0-16.3
 4. A brain
     - Remember, this is mainly for developers.
 
@@ -63,16 +63,14 @@ On A10 and A11, you **must disable your passcode while in the jailbroken state**
 
 1. Install palera1n with `pip install -U palera1n`
 2. Run `palera1n`
-    - \[A10+\] Before running, you **must** disable your passcode
-    - If you'd like to start from DFU mode, append `--dfu <iOS version you're currently on>`
+    - \[A11\] Before running, you **must** disable your passcode
 3. Follow the on-screen steps carefully
 
 ## Install latest (possibly unstable)
 
 1. Install palera1n with `pip install -U git+https://github.com/palera1n/palera1n`
 2. Run `palera1n`
-    - \[A10+\] Before running, you **must** disable your passcode
-    - If you'd like to start from DFU mode, append `--dfu <iOS version you're currently on>`
+    - \[A11\] Before running, you **must** disable your passcode
 3. Follow the on-screen steps carefully
 
 # Credits
