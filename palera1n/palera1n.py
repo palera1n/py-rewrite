@@ -96,7 +96,7 @@ class palera1n:
             pongo = Path("palera1n/data/pongo.bin")
             
         Jailbreak(self.data_dir, self.args).run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo=pongo, boot_args=f"{'serial=3' if self.args.serial else '-v'}", 
-                                                          force_revert=self.args.restore_rootfs, safe_mode=self.args.safe_mode)
+                                                          force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
         
         logger.log("Done!")
         logger.log("The device should now boot to jailbroken iOS", nln=False)
