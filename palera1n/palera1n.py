@@ -196,21 +196,24 @@ class palera1n:
                     rd.restore_rootfs()
                 else:
                     rd.install(self.ipsw)
+            
+                if self.args.semi_tethered: # or self.args.rootless:
+                    utils.wait("normal")
+                else:
+                    utils.wait("recovery")
+                time.sleep(3)
+                utils.wait("dfu")
         
         # tmp folder for everything else
         with tempfile.TemporaryDirectory() as tmp:
             self.tmp = Path(tmp)
             
-            if self.args.semi_tethered or self.args.rootless:
-                utils.wait("normal")
-            else:
-                utils.wait("recovery")
-            time.sleep(3)
-            utils.wait("dfu")
-            
             # Now we check if boot files exist
             if not Path(self.data_dir / f"boot/{self.deviceid}_{self.version}/ibot.img4").exists():
                 logger.log(f"Creating boot files for {self.version}")
+                
+                Path(self.data_dir / f"boot/{self.deviceid}_{self.version}").unlink(missing_ok=True)
+                Path(self.data_dir / f"boot/{self.deviceid}_{self.version}").mkdir(parents=True)
                     
                 with remotezip.RemoteZip(self.ipsw) as ipsw:
                     ipsw.extract("BuildManifest.plist", path=self.tmp)
@@ -226,28 +229,28 @@ class palera1n:
                     ipsw.extract(utils.get_path(identity, "iBSS"), path=self.tmp)
                     ipsw.extract(utils.get_path(identity, "iBoot"), path=self.tmp)
                 
-                img4 = IMG4(self.args, self.in_package, self.data_dir / f"blobs/{self.deviceid}_{self.version}.shsh2", self.data_dir, self.tmp)
+                img4 = IMG4(self.args, self.in_package, self.data_dir / f"blobs/{self.deviceid}_{self.version}.der", self.data_dir, self.tmp)
                 
                 print("Patching iBSS")
-                Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBSS").replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "iBSS.dec"))
+                Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBSS")), decrypt_output=(self.tmp / "iBSS.dec"))
                 iBootPatcher(self.data_dir, self.args).run((self.tmp / "iBSS.dec"), (self.tmp / "iBSS.patched"))
                 img4.im4p_to_img4((self.tmp / "iBSS.patched"), (self.data_dir / f"boot/{self.deviceid}_{self.version}/iBSS.img4"), "ibss")
                 
                 print("Patching iBoot")
-                Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBoot").replace("Firmware/dfu/", "")), decrypt_output=(self.tmp / "ibot.dec"))
+                Gaster(self.data_dir, self.args).run("decrypt", decrypt_input=(self.tmp / utils.get_path(identity, "iBoot")), decrypt_output=(self.tmp / "ibot.dec"))
                 iBootPatcher(self.data_dir, self.args).run((self.tmp / "ibot.dec"), (self.tmp / "ibot.patched"), 
                                                            nvram_unlock=True, fsboot=False if self.args.semi_tethered else True, 
                                                            local_boot=True if self.args.semi_tethered else False, 
                                                            boot_args=f"{'serial=3' if self.args.serial else '-v'}{' rd=disk0s1s8' if self.args.semi_tethered else ''}")
-                with open((self.tmp / "ibot.patched"), "wb") as f:
-                    content = f.read()
-                    new = content.replace(b"s/kernelcache", b"s/kernelcachd")
-                    f.truncate(0)
-                    f.write(new)
-                img4.im4p_to_img4((self.tmp / "ibot.patched"), (self.data_dir / f"boot/{self.deviceid}_{self.version}/ibot.img4"), "ibec" if any(x in self.deviceid for x in ["iPhone8", "iPad5", "iPad6"]) else "ibss")
+                #with open((self.tmp / "ibot.patched"), "w+b") as f:
+                #    content = bytearray(f.read())
+                #    new = content.replace(b"s/kernelcache", b"s/kernelcachd")
+                #    f.seek(0)
+                #    f.write(new)
+                img4.im4p_to_img4((self.tmp / "ibot.patched"), (self.data_dir / f"boot/{self.deviceid}_{self.version}/ibot.img4"), "ibec" if self.deviceid in ("iPhone8", "iPad5", "iPad6") else "ibss")
                 
             # Lets actually boot the device
-            if utils.check_pwned() is False:
+            if utils.check_pwned(self.data_dir, self.args) is False:
                 print("Pwning device")
                 Gaster(self.data_dir, self.args).run("pwn")
                 Gaster(self.data_dir, self.args).run("reset")
@@ -255,13 +258,14 @@ class palera1n:
             irec = irecovery(self.data_dir, self.args)
             
             irec.run("file", file=(self.data_dir / f"boot/{self.deviceid}_{self.version}/iBSS.img4"))
+            irec.run("file", file=(self.data_dir / f"boot/{self.deviceid}_{self.version}/iBSS.img4"))
             irec.run("file", file=(self.data_dir / f"boot/{self.deviceid}_{self.version}/ibot.img4"))
             
             if not self.args.semi_tethered:
                 irec.run("cmd", command="fsboot")
         
-        logger.info("Done!")
-        logger.info("The device should now boot to jailbroken iOS")
-        logger.info("If you have any issues or questions, please ask in our Discord server: https://dsc.gg/palera1n")
-        logger.info("Also, this is free and open source software! Feel free to donate to our Patreon if you enjoy :)")
+        logger.log("Done!")
+        logger.log("The device should now boot to jailbroken iOS")
+        logger.log("If you have any issues or questions, please ask in our Discord server: https://dsc.gg/palera1n")
+        logger.log("Also, this is free and open source software! Feel free to donate to our Patreon if you enjoy :)")
         print(f"    {colors['green']}https://patreon.com/palera1n")

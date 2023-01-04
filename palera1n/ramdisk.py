@@ -114,8 +114,9 @@ class Ramdisk:
         img4.im4p_to_raw((self.tmp / utils.get_path(identity, "RestoreRamDisk")), (self.tmp / "ramdisk.dmg"))
         
         # Download kpf zip
+        print("Downloading kpf")
         try:
-            res = requests.get("https://nightly.link/palera1n/PongoOS/workflows/ci/iOS15/Kernel15Patcher.zip", stream=True)
+            res = requests.get("https://static.palera.in/deps/Kernel15Patcher.zip", stream=True)
             if res.status_code == 200:
                 with open("kpf.zip", "wb") as f:
                     f.write(res.content)
@@ -123,7 +124,7 @@ class Ramdisk:
                 logger.error(f"Provided URL is not reachable. Status code: {res.status_code}")
                 exit(1)
         except (requests.exceptions.NewConnectionError, ConnectionError, requests.exceptionsRequestException) as err:
-            logger.error(f"Kernel15Patcher versioning download URL is not reachable. Error: {err}")
+            logger.error(f"Kernel15Patcher download URL is not reachable. Error: {err}")
         
         # Unzip kpf zip
         with zipfile.ZipFile("kpf.zip", 'r') as f:
@@ -162,12 +163,13 @@ class Ramdisk:
         irec = irecovery(self.data_dir, self.args)
         
         irec.run("file", file=(self.tmp / "iBSS.img4"))
+        irec.run("file", file=(self.tmp / "iBSS.img4"))
         irec.run("file", file=(self.tmp / "iBEC.img4"))
         if self.cpid in ('0x8010', '0x8011', '0x8012', '0x8015'):
             irec.run("cmd", command="go")
         
         irec.run("file", file=(self.tmp / "bootlogo.img4"))
-        irec.run("cmd", command="setpicture 0x0")
+        irec.run("cmd", command="setpicture 0x1")
         irec.run("file", file=(self.tmp / "ramdisk.img4"))
         irec.run("cmd", command="ramdisk")
         irec.run("file", file=(self.tmp / "devicetree.img4"))

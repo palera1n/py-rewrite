@@ -549,7 +549,7 @@ class irecovery:
                 logger.error(f'Failed to run irecovery: {output}')
                 sys.exit(1)
             
-            time.sleep(5)
+            time.sleep(4)
             
             return code, output
         elif type == "cmd":
@@ -563,7 +563,7 @@ class irecovery:
                 logger.error(f'Failed to run irecovery: {output}')
                 sys.exit(1)
             
-            time.sleep(5)
+            time.sleep(4)
             
             return code, output
 
