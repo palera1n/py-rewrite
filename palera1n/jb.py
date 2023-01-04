@@ -6,6 +6,7 @@ import sys
 import tarfile
 import time
 import zipfile
+import hashlib
 
 from argparse import Namespace
 from glob import glob
@@ -83,8 +84,8 @@ class checkra1n:
         utils.make_executable("checkra1n")
 
         # Move downloaded checkra1n to data dir
-        move("checkra1n", self.data_dir / "binaries/checkra1n")
-        logger.debug(f"Moved checkra1n to {destination_dir}", self.args.debug)
+        shutil.move("checkra1n", self.data_dir / "binaries/checkra1n")
+        logger.debug(f"Moved checkra1n to {self.data_dir / 'binaries/checkra1n'}", self.args.debug)
 
     def download(self) -> None:
         # Check for checkra1n's presence in data directory
