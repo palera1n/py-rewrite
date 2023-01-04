@@ -278,16 +278,5 @@ def run(command: str, args: Namespace) -> None:
         sys.exit(1)
 
 
-def run_ssh(client: SSHClient, command: str, args: Namespace) -> str:
-    logger.debug(f"Running command (SSH): {command}", args.debug)
-    stdin, stdout, stderr = client.exec_command(command, get_pty=True)
-    
-    if stderr != "":
-        logger.error(f"An error occurred while running an SSH command: {stderr}")
-        sys.exit(1)
-    
-    return stdout
-
-
 def get_path(identity: dict, item: str) -> str:
     return identity["Manifest"][item]["Info"]["Path"]
