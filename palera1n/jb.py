@@ -7,6 +7,8 @@ import tarfile
 import time
 import zipfile
 import hashlib
+import usb.core
+import struct
 
 from argparse import Namespace
 from glob import glob
@@ -130,8 +132,9 @@ class Jailbreak:
         self.data_dir = data_dir
         self.args = args
 
-    def run_checkra1n(self, ramdisk: Path = None, overlay: Path = None, kpf: Path = None, pongo: Path = None, 
-                      boot_args: str = None, force_revert: bool = False, safe_mode: bool = False) -> None:
+    def run_checkra1n(self, ramdisk: Path = None, overlay: Path = None, kpf: Path = None, pongo_bin: Path = None, 
+                      boot_args: str = None, force_revert: bool = False, safe_mode: bool = False, 
+                      exit_early: bool = False, pongo: bool = False) -> None:
         """Run checkra1n"""
 
         cmd = f"{self.data_dir / 'binaries/checkra1n'}"
@@ -144,8 +147,8 @@ class Jailbreak:
         if kpf != None:
             cmd = f"{cmd} -K {kpf}"
             
-        if pongo != None:
-            cmd = f"{cmd} -k {pongo}"
+        if pongo_bin != None:
+            cmd = f"{cmd} -k {pongo_bin}"
             
         if boot_args != None:
             cmd = f"{cmd} -e \"{boot_args}\""
@@ -155,14 +158,47 @@ class Jailbreak:
             
         if safe_mode != None:
             cmd = f"{cmd} -s"
+            
+        if exit_early != None:
+            cmd = f"{cmd} -E"
+            
+        if pongo != None:
+            cmd = f"{cmd} -p"
 
-        logger.log("Running checkra1n...", color=colors["yellow"])
-        logger.debug(
-            f"Running command: {cmd}",
-            self.args.debug)
+        print("Running checkra1n...")
+        logger.debug(f"Running command: {cmd}", self.args.debug)
 
         code, output = sp.getstatusoutput(cmd)
 
         if code != 0:
             logger.error(f'Failed to run checkra1n: {output}')
             sys.exit(1)
+    
+    def pongo_send_cmd(self, cmd: str) -> None:
+        dev = usb.core.find(idVendor=0x05ac, idProduct=0x4141)
+        if dev is None:
+            logger.error('Device not found')
+            sys.exit(1)
+        
+        dev.set_configuration()
+        dev.ctrl_transfer(0x21, 3, 0, 0, f"{cmd}\n")
+    
+    def pongo_send_file(self, file: Path, modload: bool = False) -> None:
+        dev = usb.core.find(idVendor=0x05ac, idProduct=0x4141)
+        if dev is None:
+            logger.error('Device not found')
+            sys.exit(1)
+            
+        with open(file, "rb") as f:
+            data = f.read()
+            
+            dev.set_configuration()
+            dev.ctrl_transfer(0x21, 2, 0, 0, 0)
+            dev.ctrl_transfer(0x21, 1, 0, 0, struct.pack('I', len(data)))
+            dev.write(2, data, 100000)
+            
+            if len(data) % 512 == 0:
+                dev.write(2, "")
+                
+            if modload:
+                dev.ctrl_transfer(0x21, 3, 0, 0, "modload\n")

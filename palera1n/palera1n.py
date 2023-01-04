@@ -84,6 +84,7 @@ class palera1n:
         utils.wait("dfu")
         
         # Lets actually boot the device
+        logger.log("Booting device")
         if self.in_package:
             ramdisk = utils.get_resources_dir("palera1n") / "ramdisk.dmg"
             overlay = utils.get_resources_dir("palera1n") / "binpack.dmg"
@@ -95,8 +96,26 @@ class palera1n:
             kpf = Path("palera1n/data/kpf")
             pongo = Path("palera1n/data/pongo.bin")
             
-        Jailbreak(self.data_dir, self.args).run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo=pongo, boot_args=f"{'serial=3' if self.args.serial else '-v'}", 
-                                                          force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
+        jb = Jailbreak(self.data_dir, self.args)
+        if self.args.a10_sep_test:
+            jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, exit_early=True, pongo=True, 
+                             force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
+            utils.wait("pongo")
+            time.sleep(2)
+            jb.pongo_send_file(kpf, modload=True)
+            jb.pongo_send_cmd("kpf")
+            jb.pongo_send_file(ramdisk)
+            jb.pongo_send_cmd("ramdisk")
+            jb.pongo_send_file(overlay)
+            jb.pongo_send_cmd("overlay")
+            jb.pongo_send_cmd("fuse lock")
+            jb.pongo_send_cmd(f"xargs {'serial=3' if self.args.serial else '-v'}")
+            jb.pongo_send_cmd("xfb")
+            jb.pongo_send_cmd("sep auto")
+            jb.pongo_send_cmd("bootux")
+        else:
+            jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=f"{'serial=3' if self.args.serial else '-v'}", 
+                             force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
         
         logger.log("Done!")
         logger.log("The device should now boot to jailbroken iOS", nln=False)
