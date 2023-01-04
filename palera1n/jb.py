@@ -161,7 +161,7 @@ class Jailbreak:
             f"Running command: {cmd}",
             self.args.debug)
 
-        code, output = subprocess.getstatusoutput(cmd)
+        code, output = sp.getstatusoutput(cmd)
 
         if code != 0:
             logger.error(f'Failed to run checkra1n: {output}')
