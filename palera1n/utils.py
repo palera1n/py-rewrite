@@ -9,7 +9,6 @@ import time
 import re
 
 from argparse import Namespace
-from paramiko.client import SSHClient
 from pathlib import Path
 from pymobiledevice3.exceptions import NoDeviceConnectedError
 from pymobiledevice3.lockdown import LockdownClient

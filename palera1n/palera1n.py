@@ -1,7 +1,6 @@
 import os
 import plistlib
 import requests
-import remotezip
 import subprocess as sp
 import sys
 import tempfile
@@ -96,7 +95,7 @@ class palera1n:
             kpf = Path("palera1n/data/kpf")
             pongo = Path("palera1n/data/pongo.bin")
             
-        Jailbreak(self.data_dir, self.args).run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo=pongo, boot_args=f"{'serial=3' if args.serial else '-v'}", 
+        Jailbreak(self.data_dir, self.args).run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo=pongo, boot_args=f"{'serial=3' if self.args.serial else '-v'}", 
                                                           force_revert=self.args.restore_rootfs, safe_mode=self.args.safe_mode)
         
         logger.log("Done!")
