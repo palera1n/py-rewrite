@@ -58,13 +58,13 @@ class palera1n:
                 irecovery(self.data_dir, self.args).download()
 
         if utils.get_device_mode() == "none":
-            logger.log("Waiting for devices...")
+            logger.log("Waiting for devices...", nln=False)
             
         while utils.get_device_mode() == "none":
             time.sleep(1)
         
         mode = utils.get_device_mode()
-        logger.log(f"Detected device in {'DFU' if mode == 'dfu' else mode} mode")
+        logger.log(f"Detected device in {'DFU' if mode == 'dfu' else mode} mode", nln=False)
         
         # Get device info, then debug log them
         if utils.get_device_mode() == "normal":
