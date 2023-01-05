@@ -29,8 +29,8 @@ class palera1n:
         self.os = sp.getoutput("uname")
 
     def main(self) -> None:
-        print(colors["bold"] + f"palera1n | version {utils.get_version()}" + colors["reset"])
-        print("Thanks to the team: Nebula, Mineek, Nathan, Ploosh, Nick Chan, checkra1n team")
+        print(colors["bold"] + colors["lightblue"] + "palera1n" + colors["reset"] + colors["bold"] + f" | version {utils.get_version()}" + colors["reset"])
+        print("Thanks to the team: Nebula, Mineek, Nathan, Ploosh, Nick Chan, and the amazing developers of checkra1n")
         
         if self.in_package:
             logger.debug(f"Running from package, not cloned repo.", self.args.debug)
