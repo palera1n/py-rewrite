@@ -48,14 +48,11 @@ class palera1n:
         checkra1n(self.data_dir, self.args).download()   
              
         self.irecovery = self.data_dir / "irecovery"
-        if utils.cmd_in_path("irecovery"):
-            logger.debug("irecovery found in path!", self.args.debug)
+        if irecovery(self.data_dir, self.args).exists_in_data_dir():
+            logger.debug("irecovery found in data dir!", self.args.debug)
         else:
-            if irecovery(self.data_dir, self.args).exists_in_data_dir():
-                logger.debug("irecovery found in data dir!", self.args.debug)
-            else:
-                logger.debug("irecovery not found in data dir", self.args.debug)
-                irecovery(self.data_dir, self.args).download()
+            logger.debug("irecovery not found in data dir", self.args.debug)
+            irecovery(self.data_dir, self.args).download()
 
         if utils.get_device_mode() == "none":
             logger.log("Waiting for devices...", nln=False)
@@ -80,11 +77,11 @@ class palera1n:
                 utils.fix_autoboot(self.data_dir, self.args)
                 logger.log("Entered recovery mode.")
             utils.guide_to_dfu(utils.device_info("recovery", "CPID", self.data_dir, self.args), utils.device_info("recovery", "PRODUCT", self.data_dir, self.args), self.data_dir, self.args)
-
         utils.wait("dfu")
         
         # Lets actually boot the device
         logger.log("Booting device")
+        boot_args = f"{'serial=3' if self.args.serial else '-v'}"
         if self.in_package:
             ramdisk = utils.get_resources_dir("palera1n") / "ramdisk.dmg"
             overlay = utils.get_resources_dir("palera1n") / "binpack.dmg"
@@ -109,12 +106,12 @@ class palera1n:
             jb.pongo_send_file(overlay)
             jb.pongo_send_cmd("overlay")
             jb.pongo_send_cmd("fuse lock")
-            jb.pongo_send_cmd(f"xargs {'serial=3' if self.args.serial else '-v'}")
+            jb.pongo_send_cmd(f"xargs {boot_args}")
             jb.pongo_send_cmd("xfb")
             jb.pongo_send_cmd("sep auto")
             jb.pongo_send_cmd("bootux")
         else:
-            jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=f"{'serial=3' if self.args.serial else '-v'}", 
+            jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args, 
                              force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
         
         logger.log("Done!")
