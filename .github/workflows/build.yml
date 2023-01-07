@@ -54,7 +54,7 @@ jobs:
           cd ready
           zip -r ../dist/ready/palera1n.zip .
           cd ..
-          rm -rf ready dist/ready
+          rm -rf ready
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
