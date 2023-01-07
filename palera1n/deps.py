@@ -1,19 +1,16 @@
-import platform
-import requests
-import shutil
-import subprocess as sp
-import sys
-import tarfile
-import time
-import zipfile
-
+# module imports
 from argparse import Namespace
-from glob import glob
 from pathlib import Path
+from platform import machine
+from requests import get
 from requests.exceptions import RequestException, ConnectionError
+from subprocess import getstatusoutput
+from time import sleep
 from typing import Union
 from urllib3.exceptions import NewConnectionError
+from zipfile import ZipFile
 
+# local imports
 from . import utils
 from . import logger
 from .logger import colors
@@ -27,11 +24,11 @@ class irecovery:
     @property
     def remote_filename(self) -> Union[str, None]:
         # Get remote irecovery name based on the platform
-        if utils.is_linux() and platform.machine() == "x86_64":
+        if utils.is_linux() and machine() == "x86_64":
             return "libirecovery-static_Linux"
-        elif utils.is_macos() and platform.machine() == "x86_64":
+        elif utils.is_macos() and machine() == "x86_64":
             return "libirecovery-static_Darwin"
-        elif utils.is_macos() and platform.machine() == "arm64":
+        elif utils.is_macos() and machine() == "arm64":
             return "libirecovery-static_Darwin"
 
     def exists_in_data_dir(self) -> bool:
@@ -51,7 +48,7 @@ class irecovery:
             f.write(content)
             
         # Unzip
-        with zipfile.ZipFile("irecovery.zip", 'r') as f:
+        with ZipFile("irecovery.zip", 'r') as f:
             f.extractall(self.data_dir / "binaries")
         Path("irecovery.zip").unlink()
 
@@ -79,7 +76,7 @@ class irecovery:
         
         # Download irecovery zip to a bytearray
         try:
-            res = requests.get(url, stream=True)
+            res = get(url, stream=True)
             if res.status_code == 200:
                 content = bytearray()
                 for data in res.iter_content(4096):
@@ -89,7 +86,7 @@ class irecovery:
         
         # Download Versioning zip to a bytearray
         try:
-            res = requests.get(versioning, stream=True)
+            res = get(versioning, stream=True)
             if res.status_code == 200:
                 with open("Versioning.zip", "wb") as f:
                     f.write(res.content)
@@ -100,7 +97,7 @@ class irecovery:
             logger.error(f"irecovery versioning download URL is not reachable. Error: {err}")
         
         # Unzip versioning zip
-        with zipfile.ZipFile("Versioning.zip", 'r') as f:
+        with ZipFile("Versioning.zip", 'r') as f:
             f.extractall(".")
         Path("Versioning.zip").unlink()
         
@@ -108,7 +105,7 @@ class irecovery:
         sha = open("latest_build_sha.txt", "r")
         num = open("latest_build_num.txt", "r")
         if exists:
-            strings = sp.getoutput(f"strings {self.data_dir / 'binaries/irecovery'}").splitlines()
+            strings = getoutput(f"strings {self.data_dir / 'binaries/irecovery'}").splitlines()
             check = f"Version: {sha.read()}-{num.read()}"
             logger.debug(f"Checking for '{check}'", self.args.debug)
 
@@ -123,7 +120,7 @@ class irecovery:
                                 color=colors["yellow"])
                     else:
                         logger.error('irecovery download url is not reachable, and no irecovery found in path, exiting.')
-                        sys.exit(1)
+                        exit(1)
                 # If SHA's do not match but the content is not empty, save it to a file
                 else:
                     logger.debug(f"irecovery SHA failed to verify, saving newer version", self.args.debug)
@@ -136,7 +133,7 @@ class irecovery:
                             color=colors["yellow"])
                 else:
                     logger.error('irecovery download url is not reachable, and no irecovery found in path, exiting.')
-                    sys.exit(1)
+                    exit(1)
             # If SHA's do not match but the content is not empty, save it to a file
             else:
                 logger.debug(f"irecovery SHA failed to verify, saving newer version", self.args.debug)
@@ -151,11 +148,11 @@ class irecovery:
 
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
-            code, output = sp.getstatusoutput(f"{cmd}")
+            code, output = getstatusoutput(f"{cmd}")
 
             if code != 0:
                 logger.error(f'Failed to run irecovery: {output}')
-                sys.exit(1)
+                exit(1)
             
             return code, output
         elif type == "file":
@@ -163,13 +160,13 @@ class irecovery:
             
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
-            code, output = sp.getstatusoutput(f"{cmd}")
+            code, output = getstatusoutput(f"{cmd}")
 
             if code != 0:
                 logger.error(f'Failed to run irecovery: {output}')
-                sys.exit(1)
+                exit(1)
             
-            time.sleep(4)
+            sleep(4)
             
             return code, output
         elif type == "cmd":
@@ -177,12 +174,12 @@ class irecovery:
             
             logger.debug(f"Running command: {cmd}", self.args.debug)
             
-            code, output = sp.getstatusoutput(f"{cmd}")
+            code, output = getstatusoutput(f"{cmd}")
 
             if code != 0:
                 logger.error(f'Failed to run irecovery: {output}')
-                sys.exit(1)
+                exit(1)
             
-            time.sleep(4)
+            sleep(4)
             
             return code, output

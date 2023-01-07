@@ -1,6 +1,8 @@
-import os
+# module imports
+from os import name
 
-if os.name == 'nt':  # Only if we are running on Windows
+# fix logging if we are running on Windows
+if name == 'nt':
     from ctypes import windll
     k = windll.kernel32
     k.SetConsoleMode(k.GetStdHandle(-11), 7)

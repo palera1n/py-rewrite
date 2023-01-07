@@ -1,22 +1,18 @@
-import platform
-import requests
-import shutil
-import subprocess as sp
-import sys
-import tarfile
-import time
-import zipfile
-import hashlib
-import usb.core
-import struct
-
+# module imports
 from argparse import Namespace
-from glob import glob
+from hashlib import md5
 from pathlib import Path
+from platform import machine
+from requests import get
 from requests.exceptions import RequestException, ConnectionError
+from shutil import move
+from struct import pack
+from subprocess import getstatusoutput
 from typing import Union
 from urllib3.exceptions import NewConnectionError
+from usb.core import find
 
+# local imports
 from . import utils
 from . import logger
 from .logger import colors
@@ -32,10 +28,10 @@ class checkra1n:
     def get_hash(filepath, url):
         # Get remote hash if a url is provided
         # otherwise, get hash of a local file
-        m = hashlib.md5()
+        m = md5()
         if url is None:
             with open(filepath, 'rb') as fh:
-                m = hashlib.md5()
+                m = md5()
                 while True:
                     data = fh.read(8192)
                     if not data:
@@ -44,7 +40,7 @@ class checkra1n:
                 return m.hexdigest()
         else:
             try:
-                res = requests.get(url, stream=True)
+                res = get(url, stream=True)
                 if res.status_code == 200:
                     content = bytearray()
                     for data in res.iter_content(4096):
@@ -60,9 +56,9 @@ class checkra1n:
     @property
     def remote_filename(self) -> Union[str, None]:
         # Get remote checkra1n name based on the platform
-        if utils.is_linux() and platform.machine() == "x86_64":
+        if utils.is_linux() and machine() == "x86_64":
             return "checkra1n-linux-x86_64"
-        elif utils.is_linux() and platform.machine() == "aarch64":
+        elif utils.is_linux() and machine() == "aarch64":
             return "checkra1n-linux-arm64"
         elif utils.is_macos():
             return "checkra1n-macos"
@@ -86,7 +82,7 @@ class checkra1n:
         utils.make_executable("checkra1n")
 
         # Move downloaded checkra1n to data dir
-        shutil.move("checkra1n", self.data_dir / "binaries/checkra1n")
+        move("checkra1n", self.data_dir / "binaries/checkra1n")
         logger.debug(f"Moved checkra1n to {self.data_dir / 'binaries/checkra1n'}", self.args.debug)
 
     def download(self) -> None:
@@ -121,7 +117,7 @@ class checkra1n:
                                color=colors["yellow"])
                 else:
                     logger.error('Download url is not reachable, and no checkra1n found in path, exiting.')
-                    sys.exit(1)
+                    exit(1)
             # If hashes do not match but the content is not empty, save it to a file
             else:
                 logger.debug(f"checkra1n hash failed to verify, saving newer version", self.args.debug)
@@ -168,33 +164,33 @@ class Jailbreak:
         print("Running checkra1n...")
         logger.debug(f"Running command: {cmd}", self.args.debug)
 
-        code, output = sp.getstatusoutput(cmd)
+        code, output = getstatusoutput(cmd)
 
         if code != 0:
             logger.error(f'Failed to run checkra1n: {output}')
-            sys.exit(1)
+            exit(1)
     
     def pongo_send_cmd(self, cmd: str) -> None:
-        dev = usb.core.find(idVendor=0x05ac, idProduct=0x4141)
+        dev = find(idVendor=0x05ac, idProduct=0x4141)
         if dev is None:
             logger.error('Device not found')
-            sys.exit(1)
+            exit(1)
         
         dev.set_configuration()
         dev.ctrl_transfer(0x21, 3, 0, 0, f"{cmd}\n")
     
     def pongo_send_file(self, file: Path, modload: bool = False) -> None:
-        dev = usb.core.find(idVendor=0x05ac, idProduct=0x4141)
+        dev = find(idVendor=0x05ac, idProduct=0x4141)
         if dev is None:
             logger.error('Device not found')
-            sys.exit(1)
+            exit(1)
             
         with open(file, "rb") as f:
             data = f.read()
             
             dev.set_configuration()
             dev.ctrl_transfer(0x21, 2, 0, 0, 0)
-            dev.ctrl_transfer(0x21, 1, 0, 0, struct.pack('I', len(data)))
+            dev.ctrl_transfer(0x21, 1, 0, 0, pack('I', len(data)))
             dev.write(2, data, 100000)
             
             if len(data) % 512 == 0:

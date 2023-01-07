@@ -1,14 +1,10 @@
-import os
-import plistlib
-import requests
-import subprocess as sp
-import sys
-import tempfile
-import time
-
-from pathlib import Path
+# module imports
 from argparse import Namespace
+from pathlib import Path
+from subprocess import getoutput
+from time import sleep
 
+# local imports
 from . import utils
 from . import logger
 from .deps import irecovery
@@ -26,7 +22,7 @@ class palera1n:
         self.tmp = None
         
         # Other variables
-        self.os = sp.getoutput("uname")
+        self.os = getoutput("uname")
 
     def main(self) -> None:
         print(colors["bold"] + colors["lightblue"] + "palera1n" + colors["reset"] + colors["bold"] + f" | version {utils.get_version()}" + colors["reset"])
@@ -61,7 +57,7 @@ class palera1n:
             logger.log("Waiting for devices...", nln=False)
             
         while utils.get_device_mode() == "none":
-            time.sleep(1)
+            sleep(1)
         
         mode = utils.get_device_mode()
         logger.log(f"Detected device in {'DFU' if mode == 'dfu' else mode} mode", nln=False)
@@ -70,7 +66,7 @@ class palera1n:
         if utils.get_device_mode() == "normal":
             if utils.device_info("normal", "CPUArchitecture", self.data_dir, self.args) == "arm64e":
                 logger.error("Your device is not supported. (arm64e architecture detected)")
-                sys.exit(1)
+                exit(1)
         
         if utils.get_device_mode() != "dfu":
             if utils.get_device_mode() != "recovery":
@@ -101,7 +97,7 @@ class palera1n:
             jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, exit_early=True, pongo=True, 
                              force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
             utils.wait("pongo")
-            time.sleep(2)
+            sleep(2)
             jb.pongo_send_file(kpf, modload=True)
             jb.pongo_send_cmd("kpf")
             jb.pongo_send_file(ramdisk)

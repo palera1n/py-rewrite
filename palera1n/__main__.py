@@ -1,6 +1,7 @@
-# imports
-import argparse
+# module imports
+from argparse import ArgumentParser
 
+# local imports
 from . import palera1n
 from . import utils
 
@@ -11,7 +12,7 @@ def main(argv=None, in_package=None) -> None:
 
     in_package = False if in_package is None else in_package
     
-    parser = argparse.ArgumentParser()
+    parser = ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true',
                         help="shows some debug info, only useful for testing")
     parser.add_argument('-R', '--restore-rootfs', action='store_true',
