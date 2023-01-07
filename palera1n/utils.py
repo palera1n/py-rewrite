@@ -9,7 +9,7 @@ from os import environ
 from re import match
 from shutil import which
 from subprocess import getoutput, getstatusoutput
-from sys import platform, stdout, version
+from sys import platform, stdout, version_info
 from time import sleep
 from typing import Union
 
