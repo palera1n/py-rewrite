@@ -56,9 +56,10 @@ jobs:
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
         with:
-          host: ${{ secrets.STATIC_FTP_HOST }}
+          host: sftp://${{ secrets.STATIC_FTP_HOST }}
           username: nebula
           password: ${{ secrets.STATIC_FTP_PASS }}
           forceUpload: true
+          dryRun: false
           localDir: 'dist/ready/'
           remoteDir: '/upload/artifacts/py-rewrite'
