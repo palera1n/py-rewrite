@@ -28,7 +28,10 @@ def main(argv=None, in_package=None) -> None:
     args = parser.parse_args()
 
     pr = palera1n.palera1n(in_package, args)
-    pr.main()
+    try:
+        pr.main()
+    except KeyboardInterrupt:
+        exit(1)
 
 
 if __name__ == "__main__":
