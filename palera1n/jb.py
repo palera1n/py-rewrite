@@ -177,6 +177,7 @@ class Jailbreak:
             exit(1)
         
         dev.set_configuration()
+        logger.debug(f"Running Pongo command: {cmd}", self.args.debug)
         dev.ctrl_transfer(0x21, 3, 0, 0, f"{cmd}\n")
     
     def pongo_send_file(self, file: Path, modload: bool = False) -> None:
@@ -197,4 +198,5 @@ class Jailbreak:
                 dev.write(2, "")
                 
             if modload:
+                logger.debug("Running Pongo command: modload", self.args.debug)
                 dev.ctrl_transfer(0x21, 3, 0, 0, "modload\n")
