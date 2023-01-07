@@ -48,10 +48,13 @@ jobs:
 
       - name: Prepare artifact
         run: |
-          mkdir -p ready dist/ready
+          mkdir ready
           cp -R dist/* ready/
-          zip -r dist/ready/palera1n.zip ready/*
-          rm -rf ready
+          mkdir dist/ready
+          cd ready
+          zip -r ../dist/ready/palera1n.zip .
+          cd ..
+          rm -rf ready dist/ready
 
       - name: Upload artifact
         uses: wangyucode/sftp-upload-action@v1.4.8
