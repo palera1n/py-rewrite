@@ -40,8 +40,25 @@ jobs:
         run: |
           poetry publish -u __token__ -p ${{ secrets.PYPI_TOKEN }}
           
+      #- name: Upload artifact
+      #  uses: actions/upload-artifact@v3
+      #  with:
+      #    name: palera1n
+      #    path: dist/**
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p ready dist/ready
+          cp -R dist/* ready/
+          zip -r dist/ready/palera1n.zip ready/*
+          rm -rf ready
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: wangyucode/sftp-upload-action@v1.4.8
         with:
-          name: palera1n
-          path: dist/**
+          host: ${{ secrets.STATIC_FTP_HOST }}
+          username: nebula
+          password: ${{ secrets.STATIC_FTP_PASS }}
+          forceUpload: true
+          localDir: 'dist/ready/'
+          remoteDir: '/upload/artifacts/py-rewrite'
