@@ -11,6 +11,7 @@ from subprocess import getstatusoutput
 from typing import Union
 from urllib3.exceptions import NewConnectionError
 from usb.core import find
+from time import sleep
 
 # local imports
 from . import utils
@@ -130,7 +131,7 @@ class Jailbreak:
 
     def run_checkra1n(self, ramdisk: Path = None, overlay: Path = None, kpf: Path = None, pongo_bin: Path = None, 
                       boot_args: str = None, force_revert: bool = False, safe_mode: bool = False, 
-                      exit_early: bool = False, pongo: bool = False) -> None:
+                      exit_early: bool = False, pongo: bool = False, pongo_full: bool = False) -> None:
         """Run checkra1n"""
 
         cmd = f"{self.data_dir / 'binaries/checkra1n'}"
@@ -149,17 +150,20 @@ class Jailbreak:
         if boot_args != None:
             cmd = f"{cmd} -e \"{boot_args}\""
             
-        if force_revert != None:
+        if force_revert == True:
             cmd = f"{cmd} --force-revert"
             
-        if safe_mode != None:
+        if safe_mode == True:
             cmd = f"{cmd} -s"
             
-        if exit_early != None:
+        if exit_early == True:
             cmd = f"{cmd} -E"
             
-        if pongo != None:
+        if pongo == True:
             cmd = f"{cmd} -p"
+            
+        if pongo_full == True:
+            cmd = f"{cmd} -P"
 
         print("Running checkra1n...")
         logger.debug(f"Running command: {cmd}", self.args.debug)
@@ -179,6 +183,7 @@ class Jailbreak:
         dev.set_configuration()
         logger.debug(f"Running Pongo command: {cmd}", self.args.debug)
         dev.ctrl_transfer(0x21, 3, 0, 0, f"{cmd}\n")
+        sleep(1)
     
     def pongo_send_file(self, file: Path, modload: bool = False) -> None:
         dev = find(idVendor=0x05ac, idProduct=0x4141)
@@ -200,3 +205,5 @@ class Jailbreak:
             if modload:
                 logger.debug("Running Pongo command: modload", self.args.debug)
                 dev.ctrl_transfer(0x21, 3, 0, 0, "modload\n")
+        
+        sleep(1)

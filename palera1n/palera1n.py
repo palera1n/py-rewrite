@@ -3,11 +3,11 @@ from argparse import Namespace
 from pathlib import Path
 from subprocess import getoutput
 from time import sleep
+from pymobiledevice3.irecv import IRecv
 
 # local imports
 from . import utils
 from . import logger
-from .deps import irecovery
 from .jb import checkra1n, Jailbreak
 from .logger import colors
 
@@ -23,10 +23,12 @@ class palera1n:
         
         # Other variables
         self.os = getoutput("uname")
+        self.irecv = None
+        self.jb = None
 
     def main(self) -> None:
         print(colors["bold"] + colors["lightblue"] + "palera1n" + colors["reset"] + colors["bold"] + f" | version {utils.get_version()}" + colors["reset"])
-        print("Thanks to the team: Nebula, Mineek, Nathan, Ploosh, Nick Chan, and the amazing developers of checkra1n")
+        print("Made with ❤️ by Nebula, Mineek, Nathan, llsc12, Ploosh, Nick Chan, and the amazing developers of checkra1n")
         
         if self.in_package:
             logger.debug(f"Running from package, not cloned repo.", self.args.debug)
@@ -41,38 +43,48 @@ class palera1n:
         
         # Dependency check
         logger.log("Checking for dependencies...")
-        checkra1n(self.data_dir, self.args).download()   
-             
-        self.irecovery = self.data_dir / "irecovery"
-        if irecovery(self.data_dir, self.args).exists_in_data_dir():
-            logger.debug("irecovery found in data dir!", self.args.debug)
-        else:
-            logger.debug("irecovery not found in data dir", self.args.debug)
-            irecovery(self.data_dir, self.args).download()
+        print("Checking for checkra1n")
+        checkra1n(self.data_dir, self.args).download()
 
-        if utils.get_device_mode() == "none":
-            logger.log("Waiting for devices...", nln=False)
+        logger.log("Waiting for devices...")
             
         while utils.get_device_mode() == "none":
             sleep(1)
         
         mode = utils.get_device_mode()
-        logger.log(f"Detected device in {'DFU' if mode == 'dfu' else mode} mode", nln=False)
+        print(f"Detected device in {'DFU' if mode == 'dfu' else mode} mode")
+        self.jb = Jailbreak(self.data_dir, self.args)
+        
+        if utils.get_device_mode() == "pongo":
+            print("Rebooting device in Pongo")
+            self.jb.pongo_send_cmd("bootx")
+            
+            logger.log("Waiting for devices...")
+            while utils.get_device_mode() == "none":
+                sleep(1)
         
         # Get device info, then debug log them
         if utils.get_device_mode() == "normal":
-            if utils.device_info("normal", "CPUArchitecture", self.data_dir, self.args) == "arm64e":
-                logger.error("Your device is not supported. (arm64e architecture detected)")
+            if utils.device_info("CPUArchitecture", self.data_dir, self.args) == "arm64e":
+                logger.error("palera1n does not support arm64e devices, and never will")
                 exit(1)
         
-        if utils.get_device_mode() != "dfu":
-            if utils.get_device_mode() != "recovery":
+        if utils.get_device_mode() == "dfu":
+            self.irecv = IRecv()
+            self.irecv._reinit(ecid=self.irecv.ecid)
+        else:
+            if utils.get_device_mode() == "recovery":
+                self.irecv = IRecv()
+                self.irecv._reinit(ecid=self.irecv.ecid)
+            else:
                 logger.log("Entering recovery mode...")
                 utils.enter_recovery()
                 utils.wait("recovery")
-                utils.fix_autoboot(self.data_dir, self.args)
-                logger.log("Entered recovery mode.")
-            utils.guide_to_dfu(utils.device_info("recovery", "CPID", self.data_dir, self.args), utils.device_info("recovery", "PRODUCT", self.data_dir, self.args), self.data_dir, self.args)
+                self.irecv = IRecv()
+                self.irecv._reinit(ecid=self.irecv.ecid)
+                self.irecv.set_autoboot(True)
+                print("Entered recovery mode.")
+            utils.guide_to_dfu(str(self.irecv.chip_id), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
         utils.wait("dfu")
         
         # Lets actually boot the device
@@ -88,27 +100,27 @@ class palera1n:
             overlay = Path("palera1n/data/binpack.dmg")
             kpf = Path("palera1n/data/kpf")
             pongo = Path("palera1n/data/pongo.bin")
-            
-        jb = Jailbreak(self.data_dir, self.args)
+        
+        sleep(3)
         if self.args.a10_sep_test:
-            jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, exit_early=True, pongo=True, 
-                             force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
+            self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, exit_early=True, pongo=True, 
+                                  force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
             utils.wait("pongo")
             sleep(2)
-            jb.pongo_send_file(kpf, modload=True)
-            jb.pongo_send_cmd("kpf")
-            jb.pongo_send_file(ramdisk)
-            jb.pongo_send_cmd("ramdisk")
-            jb.pongo_send_file(overlay)
-            jb.pongo_send_cmd("overlay")
-            jb.pongo_send_cmd("fuse lock")
-            jb.pongo_send_cmd(f"xargs {boot_args}")
-            jb.pongo_send_cmd("xfb")
-            jb.pongo_send_cmd("sep auto")
-            jb.pongo_send_cmd("bootux")
+            self.jb.pongo_send_file(kpf, modload=True)
+            self.jb.pongo_send_cmd("kpf")
+            self.jb.pongo_send_file(ramdisk)
+            self.jb.pongo_send_cmd("ramdisk")
+            self.jb.pongo_send_file(overlay)
+            self.jb.pongo_send_cmd("overlay")
+            self.jb.pongo_send_cmd("fuse lock")
+            self.jb.pongo_send_cmd(f"xargs {boot_args}")
+            self.jb.pongo_send_cmd("xfb")
+            self.jb.pongo_send_cmd("sep auto")
+            self.jb.pongo_send_cmd("bootux")
         else:
-            jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args, 
-                             force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
+            self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args,
+                                  force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
         
         logger.log("Done!")
         logger.log("The device should now boot to jailbroken iOS", nln=False)

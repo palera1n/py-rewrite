@@ -5,6 +5,7 @@ from pathlib import Path
 from pkg_resources import get_distribution
 from platform import machine
 from pymobiledevice3.lockdown import LockdownClient
+from pymobiledevice3.irecv import IRecv
 from os import environ
 from re import match
 from shutil import which
@@ -15,7 +16,6 @@ from typing import Union
 
 # local imports
 from . import logger
-from .deps import irecovery
 from .logger import colors
 
 
@@ -30,7 +30,7 @@ def remove_log_stdout(toremove: str):
         stdout.flush()
 
 
-def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
+def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace, irecv: IRecv):
     """Guide the user to enter DFU mode"""
     log = "Get ready (3)"
     colorway = colors["yellow"] + colors["bold"] + "[*] " + colors["reset"] + colors["yellow"]
@@ -62,7 +62,10 @@ def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
         remove_log_stdout(colorway + log.replace("4", str(4 - i)) + colors["reset"])
         log_stdout(colorway + log.replace("4", str(4 - i)) + colors["reset"])
         if (i == 3):
-            irecovery(data_dir, args).run(type="cmd", command="reset")
+            try:
+                irecv.send_command("reset")
+            except:
+                pass
         else:
             sleep(1)
 
@@ -79,6 +82,11 @@ def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace):
     
     for i in range(9):
         i = i + 1
+        if get_device_mode() == "dfu":
+            remove_log_stdout(colorway + log + colors["reset"])
+            logger.log("Successfully entered DFU mode.")
+            return
+        
         remove_log_stdout(colorway + log.replace("10", str(10 - i)) + colors["reset"])
         log_stdout(colorway + log.replace("10", str(10 - i)) + colors["reset"])
         sleep(1)
@@ -96,35 +104,12 @@ def enter_recovery() -> None:
     """Enter recovery mode"""
     with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
         lockdown.enter_recovery()
-        
-
-def fix_autoboot(data_dir: Path, args: Namespace) -> None:
-    """Fix autoboot"""
-    status, output = irecovery(data_dir, args).run("cmd", command="setenv auto-boot true")
-    status, output = irecovery(data_dir, args).run("cmd", command="saveenv")
-    if status != 0:
-        logger.error(f"An error occurred when running saveenv: {output}")
-        exit(1)
     
 
-def device_info(type: str, string: str, data_dir: Path, args: Namespace) -> str:
+def device_info(string: str, data_dir: Path, args: Namespace) -> str:
     """Get info about the device"""
-    if type == "normal":
-        with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
-            return lockdown.all_values[string]
-    elif type == "recovery":
-        #status, output = getstatusoutput(f"{get_storage_dir() / 'irecovery'} -q | grep {string} | sed 's/{string}: //'")
-        status, output = irecovery(data_dir, args).run("info")
-            
-        info = None
-        for line in output.split('\n'):
-            if string in line:
-                info = line.replace(f"{string}: ", "")
-        
-        if info is None:
-            return ""
-        else:
-            return info
+    with LockdownClient(client_name="palera1n", usbmux_connection_type="USB") as lockdown:
+        return lockdown.all_values[string]
 
 
 def is_macos() -> bool:
@@ -260,14 +245,6 @@ def wait(mode: str) -> bool:
     
         while get_device_mode() != mode:
             sleep(1)
-
-
-def check_pwned(data_dir: Path, args: Namespace) -> tuple[bool, str]:
-    pwned = device_info("recovery", "PWND", data_dir, args)
-    if pwned == "":
-        return False, None
-    else:
-        return True, pwned
 
 
 def run(command: str, args: Namespace) -> None:
