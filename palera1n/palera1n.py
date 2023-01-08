@@ -4,6 +4,7 @@ from pathlib import Path
 from subprocess import getoutput
 from time import sleep
 from pymobiledevice3.irecv import IRecv
+from sys import exit
 
 # local imports
 from . import utils
@@ -42,9 +43,10 @@ class palera1n:
         Path(self.data_dir / "binaries").mkdir(exist_ok=True, parents=True)
         
         # Dependency check
-        logger.log("Checking for dependencies...")
-        print("Checking for checkra1n")
-        checkra1n(self.data_dir, self.args).download()
+        if self.args.subcommand != "dfuhelper":
+            logger.log("Checking for dependencies...")
+            print("Checking for checkra1n")
+            checkra1n(self.data_dir, self.args).download()
 
         logger.log("Waiting for devices...")
             
@@ -86,6 +88,9 @@ class palera1n:
                 print("Entered recovery mode.")
             utils.guide_to_dfu(str(self.irecv.chip_id), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
         utils.wait("dfu")
+        
+        if self.args.subcommand == "dfuhelper":
+            exit(0)
         
         # Lets actually boot the device
         logger.log("Booting device")
