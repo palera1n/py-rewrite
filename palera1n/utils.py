@@ -3,16 +3,18 @@ from argparse import Namespace
 from importlib import resources
 from pathlib import Path
 from pkg_resources import get_distribution
-from platform import machine
+from platform import machine, release
 from pymobiledevice3.lockdown import LockdownClient
 from pymobiledevice3.irecv import IRecv
 from os import environ
 from re import match
 from shutil import which
 from subprocess import getoutput, getstatusoutput
-from sys import platform, stdout, version_info
+from sys import platform, stdout, version_info, excepthook, exit
 from time import sleep
 from typing import Union
+from atexit import register
+from biplist import readPlist, writePlist
 
 # local imports
 from . import logger
@@ -258,3 +260,67 @@ def run(command: str, args: Namespace) -> None:
 
 def get_path(identity: dict, item: str) -> str:
     return identity["Manifest"][item]["Info"]["Path"]
+
+
+# by staturnz @0x7FF7, requires biplist for reading/writing binary plists
+def amp_blocker(start: bool) -> None:
+    if is_macos():
+        # check kernel version for 19 (10.15 Catalina) or greater
+        kernel_ver = int(release().split('.')[0])
+        home = Path.home()
+        if kernel_ver < 19:
+            logger.debug(f"Host is on Darwin Kernel Version {str(kernel_ver)}, not running amp_blocker()", str(kernel_ver))               
+            return
+        globalPref = readPlist("%s/Library/Preferences/.GlobalPreferences.plist" % home)
+        ampDevices = readPlist("%s/Library/Preferences/com.apple.AMPDevicesAgent.plist" % home)
+
+        if start == True:
+            globalPref["ignore-devices"] = True
+            ampDevices["dontAutomaticallySyncIPods"] = True
+        else:
+            globalPref["ignore-devices"] = False
+            ampDevices["dontAutomaticallySyncIPods"] = False
+
+        logger.debug(f"ignore-devices and dontAutomaticallySyncIPods set to: {start}", start)
+        writePlist(globalPref, "%s/Library/Preferences/.GlobalPreferences.plist" % home)
+        writePlist(ampDevices, "%s/Library/Preferences/com.apple.AMPDevicesAgent.plist" % home)
+
+
+# based off code from https://twitter.com/_niklasb
+class exit_codes(object):
+    def __init__(self):
+        self.exit_code = None
+        self.exception = None
+
+    def hook(self):
+        exit = self.exit_sys
+        self._orig_exit = exit
+        self._orig_exception_handler = self.exception_handler
+        excepthook = self.exception_handler
+
+    def exit_sys(self, code=0):
+        self.exit_code = code
+        self._orig_exit(code)
+
+    def exception_handler(self, exception_type, exception, *args):
+        self.exception = exception
+        self._orig_exc_handler(self, exception_type, exception, *args)
+
+
+def handle_exit():
+    amp_blocker(False)  # re-enable Finder iDevice popup when exiting
+    hooks = exit_codes()
+    hooks.hook()
+    if hooks.exit_code is not None:
+        logger.error(f"Exit caused by sys.exit({hooks.exit_code})")
+    elif hooks.exception is not None:
+        logger.error(f"Exit caused by exception: {hooks.exception}")
+
+register(handle_exit)
+
+        
+
+
+
+
+        

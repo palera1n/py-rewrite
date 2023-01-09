@@ -22,6 +22,7 @@ pymobiledevice3 = "^1.29.3"
 urllib3 = "^1.26.13"
 requests = "^2.28.1"
 chardet = "^5.1.0"
+biplist = "^1.0.3"
 
 [tool.poetry.scripts]
 palera1n = 'palera1n.__main__:main'

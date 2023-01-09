@@ -49,7 +49,8 @@ class palera1n:
             checkra1n(self.data_dir, self.args).download()
 
         logger.log("Waiting for devices...")
-            
+        utils.amp_blocker(True) # disable finder popup
+
         while utils.get_device_mode() == "none":
             sleep(1)
         
