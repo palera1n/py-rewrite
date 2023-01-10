@@ -270,7 +270,6 @@ def amp_blocker(start: bool) -> None:
     if is_macos():
         # check kernel version for 19 (10.15 Catalina) or newer
         kernel_ver = int(release().split('.')[0])
-        home = Path.home()
         if kernel_ver < 19:
             logger.debug(f"Host is on Darwin Kernel Version {str(kernel_ver)}, not running amp_blocker()", str(kernel_ver))               
             return
