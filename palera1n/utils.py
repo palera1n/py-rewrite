@@ -14,7 +14,6 @@ from sys import platform, stdout, version_info, excepthook, exit
 from time import sleep
 from typing import Union
 from atexit import register
-from biplist import readPlist, writePlist
 
 # local imports
 from . import logger
@@ -32,7 +31,11 @@ def remove_log_stdout(toremove: str):
         stdout.flush()
 
 
+
+
 def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace, irecv: IRecv):
+
+    print(cpid)
     """Guide the user to enter DFU mode"""
     log = "Get ready (3)"
     colorway = colors["yellow"] + colors["bold"] + "[*] " + colors["reset"] + colors["yellow"]
@@ -262,28 +265,23 @@ def get_path(identity: dict, item: str) -> str:
     return identity["Manifest"][item]["Info"]["Path"]
 
 
-# by staturnz @0x7FF7, requires biplist for reading/writing binary plists
+# by staturnz @0x7FF7
 def amp_blocker(start: bool) -> None:
     if is_macos():
-        # check kernel version for 19 (10.15 Catalina) or greater
+        # check kernel version for 19 (10.15 Catalina) or newer
         kernel_ver = int(release().split('.')[0])
         home = Path.home()
         if kernel_ver < 19:
             logger.debug(f"Host is on Darwin Kernel Version {str(kernel_ver)}, not running amp_blocker()", str(kernel_ver))               
             return
-        globalPref = readPlist("%s/Library/Preferences/.GlobalPreferences.plist" % home)
-        ampDevices = readPlist("%s/Library/Preferences/com.apple.AMPDevicesAgent.plist" % home)
-
         if start == True:
-            globalPref["ignore-devices"] = True
-            ampDevices["dontAutomaticallySyncIPods"] = True
+            ret = getstatusoutput("/bin/launchctl unload /System/Library/LaunchAgents/com.apple.AMPDeviceDiscoveryAgent.plist")
         else:
-            globalPref["ignore-devices"] = False
-            ampDevices["dontAutomaticallySyncIPods"] = False
-
-        logger.debug(f"ignore-devices and dontAutomaticallySyncIPods set to: {start}", start)
-        writePlist(globalPref, "%s/Library/Preferences/.GlobalPreferences.plist" % home)
-        writePlist(ampDevices, "%s/Library/Preferences/com.apple.AMPDevicesAgent.plist" % home)
+            ret = getstatusoutput("/bin/launchctl load /System/Library/LaunchAgents/com.apple.AMPDeviceDiscoveryAgent.plist")
+            getstatusoutput("killall Finder") # needed for AMPDevicesUI to reload, looking for better method
+        if ret[1].startswith('Load') or ret[1].startswith('Unload'):
+            logger.debug(f"Already (un)loaded:", ret[0])
+            return
 
 
 # based off code from https://twitter.com/_niklasb
@@ -317,10 +315,3 @@ def handle_exit():
         logger.error(f"Exit caused by exception: {hooks.exception}")
 
 register(handle_exit)
-
-        
-
-
-
-
-        

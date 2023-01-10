@@ -87,7 +87,7 @@ class palera1n:
                 self.irecv._reinit(ecid=self.irecv.ecid)
                 self.irecv.set_autoboot(True)
                 print("Entered recovery mode.")
-            utils.guide_to_dfu(str(self.irecv.chip_id), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
+            utils.guide_to_dfu(str(hex(self.irecv.chip_id)), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
         utils.wait("dfu")
         
         if self.args.subcommand == "dfuhelper":
