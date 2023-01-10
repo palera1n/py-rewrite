@@ -28,11 +28,8 @@ class palera1n:
         self.jb = None
 
     def main(self) -> None:
-        credits = "Made with ❤️ by Nebula, Mineek, Nathan, llsc12, Ploosh, Nick Chan, and the amazing developers of checkra1n"
         print(colors["bold"] + colors["lightblue"] + "palera1n" + colors["reset"] + colors["bold"] + f" | version {utils.get_version()}" + colors["reset"])
-        if utils.is_macos:
-            credits = credits.replace("❤️", "❤️ ")[1: -1]
-        print(credits)
+        print("Made with \u2764 by Nebula, Mineek, Nathan, llsc12, Ploosh, Nick Chan, and the amazing developers of checkra1n")
         
         if self.in_package:
             logger.debug(f"Running from package, not cloned repo.", self.args.debug)
