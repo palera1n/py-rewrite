@@ -107,12 +107,12 @@ class palera1n:
             ramdisk = utils.get_resources_dir("palera1n") / "ramdisk.dmg"
             overlay = utils.get_resources_dir("palera1n") / "binpack.dmg"
             kpf = utils.get_resources_dir("palera1n") / f"kpf"
-            pongo = utils.get_resources_dir("palera1n") / f"pongo.bin"
+            pongo = utils.get_resources_dir("palera1n") / f"Pongo.bin"
         else:
             ramdisk = Path("palera1n/data/ramdisk.dmg")
             overlay = Path("palera1n/data/binpack.dmg")
             kpf = Path("palera1n/data/kpf")
-            pongo = Path("palera1n/data/pongo.bin")
+            pongo = Path("palera1n/data/Pongo.bin")
         
         sleep(3)
         #if self.args.a10_sep_test:
