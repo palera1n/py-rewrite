@@ -133,7 +133,6 @@ class Jailbreak:
                       boot_args: str = None, force_revert: bool = False, safe_mode: bool = False, 
                       exit_early: bool = False, pongo: bool = False, pongo_full: bool = False) -> None:
         """Run checkra1n"""
-
         cmd = f"{self.data_dir / 'binaries/checkra1n'}"
         if ramdisk != None:
             cmd = f"{cmd} -r {ramdisk}"

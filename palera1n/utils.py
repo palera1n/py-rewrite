@@ -31,11 +31,7 @@ def remove_log_stdout(toremove: str):
         stdout.flush()
 
 
-
-
 def guide_to_dfu(cpid: str, product: str, data_dir: str, args: Namespace, irecv: IRecv):
-
-    print(cpid)
     """Guide the user to enter DFU mode"""
     log = "Get ready (3)"
     colorway = colors["yellow"] + colors["bold"] + "[*] " + colors["reset"] + colors["yellow"]

@@ -46,8 +46,12 @@ class palera1n:
         
         # Subcommands
         if self.args.subcommand == "clean":
+            def err(func, path, exc_info):
+                logger.error(f"Failed to clean data directory: %s" % exc_info[1])
+                exit(0)
             logger.log("Cleaning data directory...")
-            rmtree(self.data_dir)
+            rmtree(self.data_dir, onerror = err)
+            print("Data Directory has been cleared.")
             exit(0)
         
         # Dependency check
@@ -56,9 +60,8 @@ class palera1n:
             print("Checking for checkra1n")
             checkra1n(self.data_dir, self.args).download()
 
-        logger.log("Waiting for devices...")
         utils.amp_blocker(True) # disable finder popup
-
+        logger.log("Waiting for devices...")
         while utils.get_device_mode() == "none":
             sleep(1)
         
