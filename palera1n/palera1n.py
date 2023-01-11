@@ -143,4 +143,7 @@ class palera1n:
         print(f"    {colors['yellow']}https://patreon.com/palera1n")
         
         if not self.args.disable_analytics:
-            req = post("https://ohio.itsnebula.net/hit", json={"app_name": "palera1n_py-rewrite"})
+            try:
+                req = post("https://ohio.itsnebula.net/hit", json={"app_name": "palera1n_py-rewrite"})
+            except:
+                pass
