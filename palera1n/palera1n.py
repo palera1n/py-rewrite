@@ -5,6 +5,8 @@ from subprocess import getoutput
 from time import sleep
 from pymobiledevice3.irecv import IRecv
 from sys import exit
+from shutil import rmtree
+from requests import post
 
 # local imports
 from . import utils
@@ -41,6 +43,12 @@ class palera1n:
         logger.debug(f"Data directory is '{self.data_dir}'", self.args.debug)
         Path(self.data_dir).mkdir(exist_ok=True, parents=True)
         Path(self.data_dir / "binaries").mkdir(exist_ok=True, parents=True)
+        
+        # Subcommands
+        if self.args.subcommand == "clean":
+            logger.log("Cleaning data directory...")
+            rmtree(self.data_dir)
+            exit(0)
         
         # Dependency check
         if self.args.subcommand != "dfuhelper":
@@ -107,28 +115,32 @@ class palera1n:
             pongo = Path("palera1n/data/pongo.bin")
         
         sleep(3)
-        if self.args.a10_sep_test:
-            self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, exit_early=True, pongo=True, 
-                                  force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
-            utils.wait("pongo")
-            sleep(2)
-            self.jb.pongo_send_file(kpf, modload=True)
-            self.jb.pongo_send_cmd("kpf")
-            self.jb.pongo_send_file(ramdisk)
-            self.jb.pongo_send_cmd("ramdisk")
-            self.jb.pongo_send_file(overlay)
-            self.jb.pongo_send_cmd("overlay")
-            self.jb.pongo_send_cmd("fuse lock")
-            self.jb.pongo_send_cmd(f"xargs {boot_args}")
-            self.jb.pongo_send_cmd("xfb")
-            self.jb.pongo_send_cmd("sep auto")
-            self.jb.pongo_send_cmd("bootux")
-        else:
-            self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args,
-                                  force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
-        
+        #if self.args.a10_sep_test:
+        self.jb.run_checkra1n(pongo_bin=pongo, exit_early=True, pongo_full=True, 
+                              force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
+        utils.wait("pongo")
+        sleep(2)
+        self.jb.pongo_send_file(kpf, modload=True)
+        self.jb.pongo_send_cmd("kpf")
+        self.jb.pongo_send_file(ramdisk)
+        self.jb.pongo_send_cmd("ramdisk")
+        self.jb.pongo_send_file(overlay)
+        self.jb.pongo_send_cmd("overlay")
+        self.jb.pongo_send_cmd("kpf")
+        self.jb.pongo_send_cmd("fuse lock")
+        self.jb.pongo_send_cmd(f"xargs {boot_args}")
+        self.jb.pongo_send_cmd("xfb")
+        self.jb.pongo_send_cmd("sep auto")
+        self.jb.pongo_send_cmd("bootux")
+        #else:
+            #self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args,
+            #                      force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
+            
         logger.log("Done!")
         logger.log("The device should now boot to jailbroken iOS", nln=False)
         logger.log("If you have any issues or questions, please ask in our Discord server: https://dsc.gg/palera1n", nln=False)
         logger.log("Also, this is free and open source software! Feel free to donate to our Patreon if you enjoy :)", nln=False)
         print(f"    {colors['yellow']}https://patreon.com/palera1n")
+        
+        if not self.args.disable_analytics:
+            req = post("https://ohio.itsnebula.net/hit", json={"app_name": "palera1n_py-rewrite"})
