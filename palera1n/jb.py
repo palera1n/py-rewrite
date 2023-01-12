@@ -11,6 +11,7 @@ from subprocess import getstatusoutput
 from typing import Union
 from urllib3.exceptions import NewConnectionError
 from usb.core import find
+from usb.util import dispose_resources
 from time import sleep
 
 # local imports
@@ -182,7 +183,12 @@ class Jailbreak:
         
         dev.set_configuration()
         logger.debug(f"Running Pongo command: {cmd}", self.args.debug)
-        dev.ctrl_transfer(0x21, 3, 0, 0, f"{cmd}\n")
+        sent = False
+        while sent == False:
+            dev.ctrl_transfer(0x21, 3, 0, 0, f"{cmd}\n")
+            sent = True
+            
+        dispose_resources(dev)
         sleep(1)
     
     def pongo_send_file(self, file: Path, modload: bool = False) -> None:
@@ -194,16 +200,21 @@ class Jailbreak:
         with open(file, "rb") as f:
             data = f.read()
             
+            sent = False
             dev.set_configuration()
-            dev.ctrl_transfer(0x21, 2, 0, 0, 0)
-            dev.ctrl_transfer(0x21, 1, 0, 0, pack('I', len(data)))
-            dev.write(2, data, 100000)
-            
-            if len(data) % 512 == 0:
-                dev.write(2, "")
+            while sent == False:
+                dev.ctrl_transfer(0x21, 2, 0, 0, 0)
+                dev.ctrl_transfer(0x21, 1, 0, 0, pack('I', len(data)))
+                dev.write(2, data, 100000)
+                
+                #if len(data) % 512 == 0:
+                #    dev.write(2, "")
+                
+                sent = True
                 
             if modload:
                 logger.debug("Running Pongo command: modload", self.args.debug)
                 dev.ctrl_transfer(0x21, 3, 0, 0, "modload\n")
         
+        dispose_resources(dev)
         sleep(1)

@@ -102,7 +102,7 @@ class palera1n:
         
         # Lets actually boot the device
         logger.log("Booting device")
-        boot_args = f"{'serial=3' if self.args.serial else '-v'}"
+        boot_args = f"{'serial=3' if self.args.serial else '-v'} rootdev=md0"
         if self.in_package:
             ramdisk = utils.get_resources_dir("palera1n") / "ramdisk.dmg"
             overlay = utils.get_resources_dir("palera1n") / "binpack.dmg"
@@ -118,10 +118,10 @@ class palera1n:
         #if self.args.a10_sep_test:
         self.jb.run_checkra1n(pongo_bin=pongo, exit_early=True, pongo_full=True, 
                               force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
-        utils.wait("pongo")
+        print("Waiting for Pongo to boot")
+        utils.wait("pongo", no_log=True)
         sleep(2)
         self.jb.pongo_send_file(kpf, modload=True)
-        self.jb.pongo_send_cmd("kpf")
         self.jb.pongo_send_file(ramdisk)
         self.jb.pongo_send_cmd("ramdisk")
         self.jb.pongo_send_file(overlay)

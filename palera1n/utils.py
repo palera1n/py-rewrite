@@ -238,10 +238,11 @@ def get_device_mode() -> str:
     return device_mode
 
 
-def wait(mode: str) -> bool:
+def wait(mode: str, no_log: bool = False) -> bool:
     """Wait for device to go into a state"""
     if get_device_mode() != mode:
-        logger.log(f"Waiting for device in {'DFU' if mode == 'dfu' else mode} mode...")
+        if not no_log:
+            logger.log(f"Waiting for device in {'DFU' if mode == 'dfu' else mode} mode...")
     
         while get_device_mode() != mode:
             sleep(1)
