@@ -202,7 +202,7 @@ def get_device_mode() -> str:
     usbserials = ""
     
     for apple in apples.splitlines():
-        if any(x in apple for x in ["12a8", "12aa", "12ab"]):
+        if apple in ("12a8", "12aa", "12ab"):
             device_mode = "normal"
             device_count += 1
         elif apple == "1281":
