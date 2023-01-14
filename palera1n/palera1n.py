@@ -31,7 +31,7 @@ class palera1n:
 
     def main(self) -> None:
         print(colors["bold"] + colors["lightblue"] + "palera1n" + colors["reset"] + colors["bold"] + f" | version {utils.get_version()}" + colors["reset"])
-        print("Made with ❤️ by Nebula, Mineek, Nathan, llsc12, Ploosh, Nick Chan, and the amazing developers of checkra1n")
+        print("Made with \u2764 by Nebula, Mineek, Nathan, llsc12, Ploosh, Nick Chan, and the amazing developers of checkra1n")
         
         if self.in_package:
             logger.debug(f"Running from package, not cloned repo.", self.args.debug)
@@ -46,8 +46,12 @@ class palera1n:
         
         # Subcommands
         if self.args.subcommand == "clean":
+            def err(func, path, exc_info):
+                logger.error(f"Failed to clean data directory: %s" % exc_info[1])
+                exit(0)
             logger.log("Cleaning data directory...")
-            rmtree(self.data_dir)
+            rmtree(self.data_dir, onerror = err)
+            print("Data Directory has been cleared.")
             exit(0)
         
         # Dependency check
@@ -56,8 +60,8 @@ class palera1n:
             print("Checking for checkra1n")
             checkra1n(self.data_dir, self.args).download()
 
+        utils.amp_blocker(True) # disable finder popup
         logger.log("Waiting for devices...")
-            
         while utils.get_device_mode() == "none":
             sleep(1)
         
@@ -94,7 +98,7 @@ class palera1n:
                 self.irecv._reinit(ecid=self.irecv.ecid)
                 self.irecv.set_autoboot(True)
                 print("Entered recovery mode.")
-            utils.guide_to_dfu(str(self.irecv.chip_id), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
+            utils.guide_to_dfu(str(hex(self.irecv.chip_id)), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
         utils.wait("dfu")
         
         if self.args.subcommand == "dfuhelper":
