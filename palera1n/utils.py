@@ -266,3 +266,9 @@ def checkra1n_flags(args: Namespace) -> hex:
         return hex(1<<0)
     elif args.restore_rootfs:
         return hex(1<<7)
+
+def get_resource(name: str, in_package: bool) -> Path:
+    if in_package:
+        return get_resources_dir("palera1n") / name
+    else:
+        return Path("palera1n/data") / name

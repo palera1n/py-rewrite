@@ -46,13 +46,13 @@ class palera1n:
         
         if self.args.safe_mode and self.args.restore_rootfs:
             logger.error("You cannot combine safe mode and restore rootfs!")
-            sys.exit(0)
+            exit(0)
         
         # Subcommands
         if self.args.subcommand == "clean":
             logger.log("Cleaning data directory...")
             rmtree(self.data_dir)
-            sys.exit(0)
+            exit(0)
         
         # Dependency check
         if self.args.subcommand != "dfuhelper":
@@ -83,10 +83,7 @@ class palera1n:
                 logger.error("palera1n does not support arm64e devices, and never will")
                 exit(1)
         
-        if utils.get_device_mode() == "dfu":
-            self.irecv = IRecv()
-            self.irecv._reinit(ecid=self.irecv.ecid)
-        else:
+        if utils.get_device_mode() != "dfu":
             if utils.get_device_mode() == "recovery":
                 self.irecv = IRecv()
                 self.irecv._reinit(ecid=self.irecv.ecid)
@@ -107,19 +104,12 @@ class palera1n:
         # Lets actually boot the device
         logger.log("Booting device")
         boot_args = f"{'serial=3' if self.args.serial else '-v'} rootdev=md0"
-        if self.in_package:
-            ramdisk = utils.get_resources_dir("palera1n") / "ramdisk.dmg"
-            overlay = utils.get_resources_dir("palera1n") / "binpack.dmg"
-            kpf = utils.get_resources_dir("palera1n") / f"kpf"
-            pongo = utils.get_resources_dir("palera1n") / f"Pongo.bin"
-        else:
-            ramdisk = Path("palera1n/data/ramdisk.dmg")
-            overlay = Path("palera1n/data/binpack.dmg")
-            kpf = Path("palera1n/data/kpf")
-            pongo = Path("palera1n/data/Pongo.bin")
+        ramdisk = utils.get_resource("ramdisk.dmg", in_package)
+        overlay = utils.get_resource("binpack.dmg", in_package)
+        kpf = utils.get_resource("kpf", in_package)
+        pongo = utils.get_resource("Pongo.bin", in_package)
         
         sleep(3)
-        #if self.args.a10_sep_test:
         self.jb.run_checkra1n(pongo_bin=pongo, exit_early=True, pongo_full=True, 
                               force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
         print("Waiting for Pongo to boot")
@@ -136,9 +126,6 @@ class palera1n:
         self.jb.pongo_send_cmd("xfb")
         self.jb.pongo_send_cmd("sep auto")
         self.jb.pongo_send_cmd("bootx")
-        #else:
-            #self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args,
-            #                      force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
             
         logger.log("Done!")
         logger.log("The device should now boot to jailbroken iOS", nln=False)
