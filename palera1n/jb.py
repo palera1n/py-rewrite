@@ -97,7 +97,7 @@ class checkra1n:
         # Get name of a remote checkra1n
         remote_filename = self.remote_filename
 
-        url = f"https://assets.checkra.in/downloads/preview/0.1337.0/{remote_filename}"
+        url = f"https://assets.checkra.in/downloads/preview/0.1337.1/{remote_filename}"
         logger.debug(f"Comparing {local_filepath} hash with {url}", self.args.debug)
 
         # Get remote hash of checkra1n
