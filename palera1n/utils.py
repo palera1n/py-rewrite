@@ -259,3 +259,10 @@ def run(command: str, args: Namespace) -> None:
 
 def get_path(identity: dict, item: str) -> str:
     return identity["Manifest"][item]["Info"]["Path"]
+
+
+def checkra1n_flags(args: Namespace) -> hex:
+    if args.safe_mode:
+        return hex(1<<0)
+    elif args.restore_rootfs:
+        return hex(1<<7)

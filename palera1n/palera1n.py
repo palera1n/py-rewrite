@@ -44,11 +44,15 @@ class palera1n:
         Path(self.data_dir).mkdir(exist_ok=True, parents=True)
         Path(self.data_dir / "binaries").mkdir(exist_ok=True, parents=True)
         
+        if self.args.safe_mode and self.args.restore_rootfs:
+            logger.error("You cannot combine safe mode and restore rootfs!")
+            sys.exit(0)
+        
         # Subcommands
         if self.args.subcommand == "clean":
             logger.log("Cleaning data directory...")
             rmtree(self.data_dir)
-            exit(0)
+            sys.exit(0)
         
         # Dependency check
         if self.args.subcommand != "dfuhelper":
@@ -67,7 +71,7 @@ class palera1n:
         
         if utils.get_device_mode() == "pongo":
             print("Rebooting device in Pongo")
-            self.jb.pongo_send_cmd("bootx")
+            self.jb.pongo_send_cmd("bootux")
             
             logger.log("Waiting for devices...")
             while utils.get_device_mode() == "none":
@@ -126,12 +130,12 @@ class palera1n:
         self.jb.pongo_send_cmd("ramdisk")
         self.jb.pongo_send_file(overlay)
         self.jb.pongo_send_cmd("overlay")
-        self.jb.pongo_send_cmd("kpf")
         self.jb.pongo_send_cmd("fuse lock")
+        self.jb.pongo_send_cmd(f"checkra1n_flags {utils.checkra1n_flags(self.args)}")
         self.jb.pongo_send_cmd(f"xargs {boot_args}")
         self.jb.pongo_send_cmd("xfb")
         self.jb.pongo_send_cmd("sep auto")
-        self.jb.pongo_send_cmd("bootux")
+        self.jb.pongo_send_cmd("bootx")
         #else:
             #self.jb.run_checkra1n(ramdisk=ramdisk, overlay=overlay, kpf=kpf, pongo_bin=pongo, boot_args=boot_args,
             #                      force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
