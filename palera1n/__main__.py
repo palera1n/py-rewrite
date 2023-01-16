@@ -26,7 +26,7 @@ def main(argv=None, in_package=None) -> None:
                         help='add serial=3 to bootargs for serial output')
     parser.add_argument('-l', '--disable-analytics', action='store_true',
                         help='disables anonymous analytics')
-    parser.add_argument('-h', '--disable-hash-checking', action='store_true',
+    parser.add_argument('-H', '--disable-hash-checking', action='store_true',
                         help='disables hash checking for binaries')
     # parser.add_argument('-a', '--a10-sep-test', action='store_true', # TODO: test and remove this
     #                    help='temporary arg for A10 sep, may or may not work correctly')
