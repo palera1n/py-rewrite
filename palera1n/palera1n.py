@@ -79,7 +79,7 @@ class palera1n:
         
         # Get device info, then debug log them
         if utils.get_device_mode() == 'normal':
-            if utils.device_info('CPUArchitecture', self.data_dir, self.args) == 'arm64e':
+            if utils.device_info('CPUArchitecture') == 'arm64e':
                 logger.error('palera1n does not support arm64e devices, and never will')
                 exit(1)
         
@@ -95,7 +95,7 @@ class palera1n:
                 self.irecv._reinit(ecid=self.irecv.ecid)
                 self.irecv.set_autoboot(True)
                 print('Entered recovery mode.')
-            utils.guide_to_dfu(str(self.irecv.chip_id), str(self.irecv.product_type), self.data_dir, self.args, self.irecv)
+            utils.guide_to_dfu(str(self.irecv.chip_id), str(self.irecv.product_type), self.irecv)
         utils.wait('dfu')
         
         if self.args.subcommand == 'dfuhelper':

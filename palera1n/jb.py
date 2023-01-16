@@ -28,8 +28,8 @@ class checkra1n:
 
     @staticmethod
     def get_hash(filepath, url):
-        # Get remote hash if a url is provided
-        # otherwise, get hash of a local file
+        '''Get remote hash if a url is provided. Otherwise, get hash of a local file.'''
+        
         m = md5()
         if url is None:
             with open(filepath, 'rb') as fh:
@@ -57,7 +57,12 @@ class checkra1n:
 
     @property
     def remote_filename(self) -> Union[str, None]:
-        # Get remote checkra1n name based on the platform
+        '''Get remote checkra1n name based on the platform.
+        
+        Returns:
+            (Union[str, None]) None if unsupported, otherwise the remote filename.
+        '''
+        
         if utils.is_linux() and machine() == 'x86_64':
             return 'checkra1n-linux-x86_64'
         elif utils.is_linux() and machine() == 'aarch64':
@@ -66,11 +71,21 @@ class checkra1n:
             return 'checkra1n-macos'
 
     def exists_in_data_dir(self) -> bool:
-        # Check if checkra1n is present in the data dir
+        '''Check if checkra1n is present in the data dir.
+        
+        Returns:
+            (bool) Whether or not checkra1n exists.
+        '''
+        
         return (self.data_dir / f'binaries/checkra1n').exists()
 
     def save_file(self, content: bytearray) -> None:
-        # Write bytearray to a new file
+        '''Write bytearray to a new file.
+        
+        Arguments:
+            content (bytearray): Content to write
+        '''
+        
         with open('checkra1n', 'wb') as f:
             f.write(content)
             logger.debug(f'Wrote file.', self.args.debug)
@@ -88,6 +103,8 @@ class checkra1n:
         logger.debug(f'Moved checkra1n to {self.data_dir / "binaries/checkra1n"}', self.args.debug)
 
     def download(self) -> None:
+        '''Download the checkra1n binary.'''
+        
         # Check for checkra1n's presence in data directory
         exists = self.exists_in_data_dir()
 
@@ -133,7 +150,7 @@ class Jailbreak:
     def run_checkra1n(self, ramdisk: Path = None, overlay: Path = None, kpf: Path = None, pongo_bin: Path = None, 
                       boot_args: str = None, force_revert: bool = False, safe_mode: bool = False, 
                       exit_early: bool = False, pongo: bool = False, pongo_full: bool = False) -> None:
-        '''Run checkra1n'''
+        '''Run checkra1n.'''
 
         cmd = f'{self.data_dir / "binaries/checkra1n"}'
         if ramdisk != None:
@@ -176,6 +193,12 @@ class Jailbreak:
             exit(1)
     
     def pongo_send_cmd(self, cmd: str) -> None:
+        '''Run a command on device using Pongo.
+        
+        Arguments:
+            cmd (str): Command to run
+        '''
+        
         dev = find(idVendor=0x05ac, idProduct=0x4141)
         if dev is None:
             logger.error('Device not found')
@@ -192,6 +215,13 @@ class Jailbreak:
         sleep(1)
     
     def pongo_send_file(self, file: Path, modload: bool = False) -> None:
+        '''Send a file to device using Pongo.
+        
+        Arguments:
+            file (Path): File to send
+            modload (bool): Defaults to False
+        '''
+        
         dev = find(idVendor=0x05ac, idProduct=0x4141)
         if dev is None:
             logger.error('Device not found')
