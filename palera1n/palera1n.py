@@ -55,7 +55,7 @@ class palera1n:
             exit(0)
         
         # Dependency check
-        if self.args.subcommand != 'dfuhelper':
+        if self.args.subcommand != 'dfuhelper' and not self.args.disable_hash_checking:
             logger.log('Checking for dependencies...')
             print('Checking for checkra1n')
             checkra1n(self.data_dir, self.args).download()
@@ -104,10 +104,10 @@ class palera1n:
         # Lets actually boot the device
         logger.log('Booting device')
         boot_args = f'{"serial=3" if self.args.serial else "-v"} rootdev=md0'
-        ramdisk = utils.get_resource('ramdisk.dmg', in_package)
-        overlay = utils.get_resource('binpack.dmg', in_package)
-        kpf = utils.get_resource('kpf', in_package)
-        pongo = utils.get_resource('Pongo.bin', in_package)
+        ramdisk = utils.get_resource('ramdisk.dmg', self.in_package)
+        overlay = utils.get_resource('binpack.dmg', self.in_package)
+        kpf = utils.get_resource('kpf', self.in_package)
+        pongo = utils.get_resource('Pongo.bin', self.in_package)
         
         sleep(3)
         self.jb.run_checkra1n(pongo_bin=pongo, exit_early=True, pongo_full=True, 
