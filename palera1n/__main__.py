@@ -14,20 +14,20 @@ def main(argv=None, in_package=None) -> None:
     in_package = False if in_package is None else in_package
     
     parser = ArgumentParser()
-    parser.add_argument("subcommand", nargs='?', help="subcommands: dfuhelper, clean")
+    parser.add_argument('subcommand', nargs='?', help='subcommands: dfuhelper, clean')
     
     parser.add_argument('-d', '--debug', action='store_true',
-                        help="shows some debug info, only useful for testing")
+                        help='shows some debug info, only useful for testing')
     parser.add_argument('-R', '--restore-rootfs', action='store_true',
-                        help="forcefully restore rootfs")
+                        help='forcefully restore rootfs')
     parser.add_argument('-s', '--safe-mode', action='store_true',
-                        help="boot without tweaks enabled")
+                        help='boot without tweaks enabled')
     parser.add_argument('-S', '--serial', action='store_true',
-                        help="add serial=3 to bootargs for serial output")
+                        help='add serial=3 to bootargs for serial output')
     parser.add_argument('-l', '--disable-analytics', action='store_true',
-                        help="disables anonymous analytics")
+                        help='disables anonymous analytics')
     #parser.add_argument('-a', '--a10-sep-test', action='store_true', # TODO: test and remove this
-    #                    help="temporary arg for A10 sep, may or may not work correctly")
+    #                    help='temporary arg for A10 sep, may or may not work correctly')
     parser.add_argument('-v', '--version', action='version', version=f'palera1n v{utils.get_version()}',
                         help='show current version and exit')
     args = parser.parse_args()
@@ -39,5 +39,5 @@ def main(argv=None, in_package=None) -> None:
         exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
