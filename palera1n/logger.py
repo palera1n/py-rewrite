@@ -38,10 +38,9 @@ colors = {
 def log(message, color=colors['yellow'], nln=True):
     """Log a message.
     
-    Arguments:
-        message: Message to log
-        color (str): Color to log (defaults to 'yellow')
-        nln (bool): Whether or not to make a new line (defaults to True)
+    :param message: Message to log
+    :param str color: Color to log with (defaults to 'yellow')
+    :param bool nln: Whether or not to make a new line (defaults to True)
     """
     
     n = '\n'
@@ -54,9 +53,8 @@ def log(message, color=colors['yellow'], nln=True):
 def debug(message, dbg: bool):
     """Log a debug message.
     
-    Arguments:
-        message: Message to log
-        dbg (bool): Whether or not we are in debug mode
+    :param message: Message to log
+    :param bool dbg: Whether or not we are in debug mode
     """
     
     if dbg:
@@ -65,9 +63,8 @@ def debug(message, dbg: bool):
 
 def error(message):
     """Log an error.
-    
-    Arguments:
-        message: Error to log
+
+    :param message: Error to log
     """
     
     print(colors['lightred'] + colors['bold'] + '[!] ' + colors['reset'] + colors['lightred'] + f'{message}' + colors['reset'])
@@ -75,9 +72,8 @@ def error(message):
 
 def ask(message):
     """Ask a question.
-    
-    Arguments:
-        message: Message to ask
+
+    :param message: Question to ask
     """
     
     return input(colors['orange'] + colors['bold'] + '[?] ' + colors['reset'] + colors['orange'] + f'{message}' + colors['reset'])

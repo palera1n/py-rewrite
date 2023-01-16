@@ -59,8 +59,8 @@ class checkra1n:
     def remote_filename(self) -> Union[str, None]:
         """Get remote checkra1n name based on the platform.
         
-        Returns:
-            (Union[str, None]) None if unsupported, otherwise the remote filename.
+        :return: None if unsupported, otherwise the remote filename
+        :rtype: Union[str, None]
         """
         
         if utils.is_linux() and machine() == 'x86_64':
@@ -70,11 +70,12 @@ class checkra1n:
         elif utils.is_macos():
             return 'checkra1n-macos'
 
+
     def exists_in_data_dir(self) -> bool:
         """Check if checkra1n is present in the data dir.
         
-        Returns:
-            (bool) Whether or not checkra1n exists.
+        :return: Whether or not checkra1n exists
+        :rtype: bool
         """
         
         return (self.data_dir / f'binaries/checkra1n').exists()
@@ -82,8 +83,7 @@ class checkra1n:
     def save_file(self, content: bytearray) -> None:
         """Write bytearray to a new file.
         
-        Arguments:
-            content (bytearray): Content to write
+        :param bytearray content: Content to write
         """
         
         with open('checkra1n', 'wb') as f:
@@ -195,8 +195,7 @@ class Jailbreak:
     def pongo_send_cmd(self, cmd: str) -> None:
         """Run a command on device using Pongo.
         
-        Arguments:
-            cmd (str): Command to run
+        :param str cmd: Command to run
         """
         
         dev = find(idVendor=0x05ac, idProduct=0x4141)
@@ -217,9 +216,8 @@ class Jailbreak:
     def pongo_send_file(self, file: Path, modload: bool = False) -> None:
         """Send a file to device using Pongo.
         
-        Arguments:
-            file (Path): File to send
-            modload (bool): Defaults to False
+        :param Path file: File to send
+        :param bool modload: Defaults to False
         """
         
         dev = find(idVendor=0x05ac, idProduct=0x4141)

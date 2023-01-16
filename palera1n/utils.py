@@ -19,12 +19,12 @@ from . import logger
 from .logger import colors
 
 
-def log_stdout(tolog: str):
+def __log_stdout(tolog: str):
     stdout.write(tolog)
     stdout.flush()
 
 
-def remove_log_stdout(toremove: str):
+def __remove_log_stdout(toremove: str):
     for _ in range(len(toremove)):
         stdout.write('\033[D \033[D')
         stdout.flush()
@@ -32,42 +32,41 @@ def remove_log_stdout(toremove: str):
 
 def guide_to_dfu(cpid: str, product: str, irecv: IRecv):
     """Guide the user to enter DFU mode
-    
-    Arguments:
-        cpid (str): CPID of the device
-        product (str): Device product number
-        irecv (IRecv): IRecv object to send the device into recovery.
+
+    :param str cpid: CPID of the device
+    :param str product: Device product number
+    :param IRecv irecv: IRecv object to send the device into recovery
     """
     
     log = 'Get ready (3)'
     colorway = colors['yellow'] + colors['bold'] + '[*] ' + colors['reset'] + colors['yellow']
 
     logger.ask('Press enter when you\'re ready to enter DFU mode.')
-    log_stdout(colorway + log)
+    __log_stdout(colorway + log)
     sleep(1)
-    remove_log_stdout(colorway + log + colors['reset'])
+    __remove_log_stdout(colorway + log + colors['reset'])
 
     for i in range(2):
         i = i + 1
-        remove_log_stdout(colorway + log.replace('3', str(3 - i)) + colors['reset'])
-        log_stdout(colorway + log.replace('3', str(3 - i)) + colors['reset'])
+        __remove_log_stdout(colorway + log.replace('3', str(3 - i)) + colors['reset'])
+        __log_stdout(colorway + log.replace('3', str(3 - i)) + colors['reset'])
         sleep(1)
     
-    remove_log_stdout(colorway + log + logger.colors['reset'])
+    __remove_log_stdout(colorway + log + logger.colors['reset'])
 
     if (cpid.startswith('0x801') and product.startswith('iPad') is not True):
         log = 'Hold volume down + side button (4)'
     else:
         log = 'Hold home + power button (4)'
 
-    log_stdout(colorway + log + colors['reset'])
+    __log_stdout(colorway + log + colors['reset'])
     sleep(1)
-    remove_log_stdout(colorway + log + colors['reset'])
+    __remove_log_stdout(colorway + log + colors['reset'])
 
     for i in range(3):
         i = i + 1
-        remove_log_stdout(colorway + log.replace('4', str(4 - i)) + colors['reset'])
-        log_stdout(colorway + log.replace('4', str(4 - i)) + colors['reset'])
+        __remove_log_stdout(colorway + log.replace('4', str(4 - i)) + colors['reset'])
+        __log_stdout(colorway + log.replace('4', str(4 - i)) + colors['reset'])
         if (i == 3):
             try:
                 irecv.send_command('reset')
@@ -76,33 +75,33 @@ def guide_to_dfu(cpid: str, product: str, irecv: IRecv):
         else:
             sleep(1)
 
-    remove_log_stdout(colorway + log + colors['reset'])
+    __remove_log_stdout(colorway + log + colors['reset'])
 
     if (cpid.startswith('0x801') and product.startswith('iPad') is not True):
         log = 'Release side button, but keep holding volume down (10)'
     else:
         log = 'Release power button, but keep holding home button (10)'
     
-    log_stdout(colorway + log + colors['reset'])
+    __log_stdout(colorway + log + colors['reset'])
     sleep(1)
-    remove_log_stdout(colorway + log + colors['reset'])
+    __remove_log_stdout(colorway + log + colors['reset'])
     
     for i in range(9):
         i = i + 1
         if get_device_mode() == 'dfu':
-            remove_log_stdout(colorway + log + colors['reset'])
+            __remove_log_stdout(colorway + log + colors['reset'])
             logger.log('Successfully entered DFU mode.')
             return
         
-        remove_log_stdout(colorway + log.replace('10', str(10 - i)) + colors['reset'])
-        log_stdout(colorway + log.replace('10', str(10 - i)) + colors['reset'])
+        __remove_log_stdout(colorway + log.replace('10', str(10 - i)) + colors['reset'])
+        __log_stdout(colorway + log.replace('10', str(10 - i)) + colors['reset'])
         sleep(1)
     
     if get_device_mode() == 'dfu':
-        remove_log_stdout(colorway + log + colors['reset'])
+        __remove_log_stdout(colorway + log + colors['reset'])
         logger.log('Successfully entered DFU mode.')
     else:
-        remove_log_stdout(colorway + log + colors['reset'])
+        __remove_log_stdout(colorway + log + colors['reset'])
         logger.error('Failed to enter DFU mode. Try running the script again.')
         exit(1)
 
@@ -116,11 +115,9 @@ def enter_recovery() -> None:
 def device_info(string: str) -> str:
     """Get info about the device
     
-    Arguments:
-        string (str): Information to retrieve from the device
-    
-    Returns:
-        (str) Found data
+    :param str string: Information to retrieve from the device
+    :return: Found data
+    :rytpe: str
     """
     
     with LockdownClient(client_name='palera1n', usbmux_connection_type='USB') as lockdown:
@@ -129,8 +126,9 @@ def device_info(string: str) -> str:
 
 def is_macos() -> bool:
     """Determine if current OS is macOS
-    Returns:
-        (bool)
+
+    :return: True if macOS, False if not
+    :rtype: bool
     """
     if machine().startswith('i'):
         return False
@@ -141,8 +139,8 @@ def is_macos() -> bool:
 def is_linux() -> bool:
     """Determine if current OS is Linux
     
-    Returns:
-        (bool)
+    :return: True if Linux, False if not
+    :rtype: bool
     """
     
     return platform == 'linux'
@@ -151,8 +149,7 @@ def is_linux() -> bool:
 def make_executable(path: Path) -> None:
     """Set chmod +x on a given path
     
-    Arguments:
-        path (Path): Path to change permissions of
+    :param Path path: Path to change permissions of
     """
     
     file = Path(path)
@@ -163,12 +160,10 @@ def make_executable(path: Path) -> None:
 
 def cmd_in_path(cmd: str) -> Union[None, str]:
     """Check if command is in PATH
-    
-    Arguments:
-        cmd (str): Command to find in path
-    
-    Returns:
-        (Union[None, str]) None if not in path, otherwise the path to the command binary.
+
+    :param str cmd: Command to find in path
+    :return: None if not in path, otherwise the path to the command binary
+    :rtype: Union[None, str]
     """
     
     path = which(cmd)
@@ -182,8 +177,8 @@ def cmd_in_path(cmd: str) -> Union[None, str]:
 def get_storage_dir() -> Path:
     """Get path to data directory
     
-    Returns:
-        (Path) Path to storage
+    :return: Path to data directory
+    :rtype: Path
     """
 
     # Get the value of PALERA1N_HOME variable and if it's exported use it as data directory
@@ -216,8 +211,8 @@ def get_version() -> str:
     """
     Get current version of running script.
     
-    Returns:
-        (str) Version
+    :return: Version
+    :rtype: str
     """
     
     # Check if running from a git repository,
@@ -232,11 +227,9 @@ def get_resources_dir(package: str) -> Path:
     """
     Gets the directory that the resources are stored in.
     
-    Arguments:
-        package (str): Path to palera1n package
-    
-    Returns:
-        (Path) Path to resources
+    :param str package: Path to palera1n package
+    :return: Path to resources
+    :rtype: Path
     """
     
     if version_info < (3, 9):
@@ -251,9 +244,9 @@ def get_resources_dir(package: str) -> Path:
 def get_device_mode() -> str:
     """
     Find what state the device is in
-    
-    Returns:
-        (str) Device state
+
+    :return: Device state
+    :rtype: str
     """
     
     if is_macos():
@@ -304,9 +297,8 @@ def get_device_mode() -> str:
 def wait(mode: str, no_log: bool = False) -> bool:
     """Wait for device to go into a state.
     
-    Arguments:
-        mode (str): State we are waiting for
-        no_log (str): Whether or not we should log
+    :param str mode: State we are waiting for
+    :param bool no_log: Whether or not we should log
     """
     
     if get_device_mode() != mode:
@@ -320,9 +312,8 @@ def wait(mode: str, no_log: bool = False) -> bool:
 def run(command: str, args: Namespace) -> None:
     """Run a command.
     
-    Arguments:
-        command (str): Command to run
-        args (Namespace): Args object
+    :param str command: Command to run
+    :param Namespace args: Args object
     """
     
     print(f'Running {command.split()[0]}')
@@ -340,11 +331,8 @@ def get_path(identity: dict, item: str) -> str:
 def checkra1n_flags(args: Namespace) -> hex:
     """Generate checkra1n flags.
     
-    Arguments:
-        args (Namespace): args object
-        
-    Returns:
-        (hex) arguments in hex
+    :param Namespace args: Args object
+    :return: Flags in hex
     """
     
     if args.safe_mode:
@@ -355,12 +343,10 @@ def checkra1n_flags(args: Namespace) -> hex:
 def get_resource(name: str, in_package: bool) -> Path:
     """Get a resource from the directory.
     
-    Arguments:
-        name (str): Name of the resource to retrieve
-        in_package (bool): If we are in a package
-    
-    Returns:
-        (Path) Path to the resources
+    :param str name: Name of the resource to retrieve
+    :param bool in_package: If we are in a package
+    :return: Path to the resources
+    :rtype: Path
     """
     
     if in_package:
