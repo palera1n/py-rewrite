@@ -17,9 +17,9 @@ def main(argv=None, in_package=None) -> None:
     parser.add_argument('subcommand', nargs='?', help='subcommands: dfuhelper, clean')
     
     parser.add_argument('-d', '--debug', action='store_true',
-                        help='shows some debug info, only useful for testing')
+                        help='shows debug info, useful for testing')
     parser.add_argument('-R', '--restore-rootfs', action='store_true',
-                        help='forcefully restore rootfs')
+                        help='restore rootfs')
     parser.add_argument('-s', '--safe-mode', action='store_true',
                         help='boot without tweaks enabled')
     parser.add_argument('-S', '--serial', action='store_true',
