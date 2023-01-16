@@ -31,13 +31,13 @@ def remove_log_stdout(toremove: str):
 
 
 def guide_to_dfu(cpid: str, product: str, irecv: IRecv):
-    '''Guide the user to enter DFU mode
+    """Guide the user to enter DFU mode
     
     Arguments:
         cpid (str): CPID of the device
         product (str): Device product number
         irecv (IRecv): IRecv object to send the device into recovery.
-    '''
+    """
     
     log = 'Get ready (3)'
     colorway = colors['yellow'] + colors['bold'] + '[*] ' + colors['reset'] + colors['yellow']
@@ -108,30 +108,30 @@ def guide_to_dfu(cpid: str, product: str, irecv: IRecv):
 
 
 def enter_recovery() -> None:
-    '''Enter recovery mode'''
+    """Enter recovery mode"""
     with LockdownClient(client_name='palera1n', usbmux_connection_type='USB') as lockdown:
         lockdown.enter_recovery()
     
 
 def device_info(string: str) -> str:
-    '''Get info about the device
+    """Get info about the device
     
     Arguments:
         string (str): Information to retrieve from the device
     
     Returns:
         (str) Found data
-    '''
+    """
     
     with LockdownClient(client_name='palera1n', usbmux_connection_type='USB') as lockdown:
         return lockdown.all_values[string]
 
 
 def is_macos() -> bool:
-    '''Determine if current OS is macOS
+    """Determine if current OS is macOS
     Returns:
         (bool)
-    '''
+    """
     if machine().startswith('i'):
         return False
 
@@ -139,21 +139,21 @@ def is_macos() -> bool:
 
 
 def is_linux() -> bool:
-    '''Determine if current OS is Linux
+    """Determine if current OS is Linux
     
     Returns:
         (bool)
-    '''
+    """
     
     return platform == 'linux'
 
 
 def make_executable(path: Path) -> None:
-    '''Set chmod +x on a given path
+    """Set chmod +x on a given path
     
     Arguments:
         path (Path): Path to change permissions of
-    '''
+    """
     
     file = Path(path)
     mode = file.stat().st_mode
@@ -162,14 +162,14 @@ def make_executable(path: Path) -> None:
 
 
 def cmd_in_path(cmd: str) -> Union[None, str]:
-    '''Check if command is in PATH
+    """Check if command is in PATH
     
     Arguments:
         cmd (str): Command to find in path
     
     Returns:
         (Union[None, str]) None if not in path, otherwise the path to the command binary.
-    '''
+    """
     
     path = which(cmd)
 
@@ -180,11 +180,11 @@ def cmd_in_path(cmd: str) -> Union[None, str]:
 
 
 def get_storage_dir() -> Path:
-    '''Get path to data directory
+    """Get path to data directory
     
     Returns:
         (Path) Path to storage
-    '''
+    """
 
     # Get the value of PALERA1N_HOME variable and if it's exported use it as data directory
     pr_home = environ.get('PALERA1N_HOME')
@@ -213,12 +213,12 @@ def get_storage_dir() -> Path:
 
 
 def get_version() -> str:
-    '''
+    """
     Get current version of running script.
     
     Returns:
         (str) Version
-    '''
+    """
     
     # Check if running from a git repository,
     # then, construct version in the following format: version-branch-hash
@@ -229,7 +229,7 @@ def get_version() -> str:
 
 
 def get_resources_dir(package: str) -> Path:
-    '''
+    """
     Gets the directory that the resources are stored in.
     
     Arguments:
@@ -237,7 +237,7 @@ def get_resources_dir(package: str) -> Path:
     
     Returns:
         (Path) Path to resources
-    '''
+    """
     
     if version_info < (3, 9):
         with resources.path(package, '__init__.py') as r:
@@ -249,17 +249,17 @@ def get_resources_dir(package: str) -> Path:
 
 
 def get_device_mode() -> str:
-    '''
+    """
     Find what state the device is in
     
     Returns:
         (str) Device state
-    '''
+    """
     
     if is_macos():
-        apples = getoutput('''system_profiler SPUSBDataType 2> /dev/null | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r''')
+        apples = getoutput("""system_profiler SPUSBDataType 2> /dev/null | grep -B1 'Vendor ID: 0x05ac' | grep 'Product ID:' | cut -dx -f2 | cut -d' ' -f1 | tail -r""")
     else:
-        apples = getoutput('''lsusb | cut -d' ' -f6 | grep \'05ac:\' | cut -d: -f2''')
+        apples = getoutput("""lsusb | cut -d' ' -f6 | grep \'05ac:\' | cut -d: -f2""")
     
     device_count = 0
     usbserials = ''
@@ -291,7 +291,7 @@ def get_device_mode() -> str:
         exit(1)
 
     if is_macos():
-        usbserials = getoutput('''system_profiler SPUSBDataType 2> /dev/null | grep 'Serial Number' | cut -d: -f2- | sed 's/ //\'''')
+        usbserials = getoutput("""system_profiler SPUSBDataType 2> /dev/null | grep 'Serial Number' | cut -d: -f2- | sed 's/ //'""")
     else:
         usbserials = getoutput('cat /sys/bus/usb/devices/*/serial')
     
@@ -302,12 +302,12 @@ def get_device_mode() -> str:
 
 
 def wait(mode: str, no_log: bool = False) -> bool:
-    '''Wait for device to go into a state.
+    """Wait for device to go into a state.
     
     Arguments:
         mode (str): State we are waiting for
         no_log (str): Whether or not we should log
-    '''
+    """
     
     if get_device_mode() != mode:
         if not no_log:
@@ -318,12 +318,12 @@ def wait(mode: str, no_log: bool = False) -> bool:
 
 
 def run(command: str, args: Namespace) -> None:
-    '''Run a command.
+    """Run a command.
     
     Arguments:
         command (str): Command to run
         args (Namespace): Args object
-    '''
+    """
     
     print(f'Running {command.split()[0]}')
     logger.debug(f'Running command: {command}', args.debug)
@@ -338,14 +338,14 @@ def get_path(identity: dict, item: str) -> str:
 
 
 def checkra1n_flags(args: Namespace) -> hex:
-    '''Generate checkra1n flags.
+    """Generate checkra1n flags.
     
     Arguments:
         args (Namespace): args object
         
     Returns:
         (hex) arguments in hex
-    '''
+    """
     
     if args.safe_mode:
         return hex(1<<0)
@@ -353,7 +353,7 @@ def checkra1n_flags(args: Namespace) -> hex:
         return hex(1<<7)
 
 def get_resource(name: str, in_package: bool) -> Path:
-    '''Get a resource from the directory.
+    """Get a resource from the directory.
     
     Arguments:
         name (str): Name of the resource to retrieve
@@ -361,7 +361,7 @@ def get_resource(name: str, in_package: bool) -> Path:
     
     Returns:
         (Path) Path to the resources
-    '''
+    """
     
     if in_package:
         return get_resources_dir('palera1n') / name
