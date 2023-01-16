@@ -6,14 +6,14 @@
   <a href="#">
     <img src="https://img.shields.io/badge/made%20with-love-E760A4.svg" alt="Made with love">
   </a>
-  <a href="https://github.com/palera1n/palera1n/blob/main/LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/palera1n/palera1n.svg" alt="License">
+  <a href="https://github.com/palera1n/py-rewrite/blob/main/LICENSE" target="_blank">
+    <img src="https://img.shields.io/github/license/palera1n/py-rewrite.svg" alt="License">
   </a>
-  <a href="https://github.com/palera1n/palera1n/graphs/contributors" target="_blank">
-    <img src="https://img.shields.io/github/contributors/palera1n/palera1n.svg" alt="Contributors">
+  <a href="https://github.com/palera1n/py-rewrite/graphs/contributors" target="_blank">
+    <img src="https://img.shields.io/github/contributors/palera1n/py-rewrite.svg" alt="Contributors">
   </a>
-  <a href="https://github.com/palera1n/palera1n/commits/main" target="_blank">
-    <img src="https://img.shields.io/github/commit-activity/w/palera1n/palera1n.svg" alt="Commits">
+  <a href="https://github.com/palera1n/py-rewrite/commits/main" target="_blank">
+    <img src="https://img.shields.io/github/commit-activity/w/palera1n/py-rewrite.svg" alt="Commits">
   </a>
   <a href="https://dsc.gg/palera1n" target="_blank">
     <img src="https://img.shields.io/discord/1028398973452570725?label=discord" alt="Discord">
