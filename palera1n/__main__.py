@@ -28,8 +28,6 @@ def main(argv=None, in_package=None) -> None:
                         help='disables anonymous analytics')
     parser.add_argument('-H', '--disable-hash-checking', action='store_true',
                         help='disables hash checking for binaries')
-    # parser.add_argument('-a', '--a10-sep-test', action='store_true', # TODO: test and remove this
-    #                    help='temporary arg for A10 sep, may or may not work correctly')
     parser.add_argument('-v', '--version', action='version', version=f'palera1n v{utils.get_version()}',
                         help='show current version and exit')
     args = parser.parse_args()
