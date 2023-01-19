@@ -7,10 +7,8 @@ on:
   workflow_dispatch:
       
   push:
-    branches:
-      - checkra1n
-      - main
-      - refactor
+    paths-ignore:
+      - '**.md'
 
 jobs:
   build:
