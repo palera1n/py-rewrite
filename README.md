@@ -65,39 +65,8 @@ It boots the device with patches for the jailbreak.
 
 On A11, you **must disable your passcode while in the jailbroken state**. We don't have an A11 SEP exploit yet.
 
-# Prerequisites
-
-1. checkm8 vulnerable iOS device on iOS 15.0-16.3 (A8X-A11)
-2. Linux or macOS computer
-    - Python 3 is required
-3. iOS 15.0-16.3
-4. A brain
-    - Remember, this is mainly for developers.
-5. Passcode disabled on A11
-    - On iOS 16, if you EVER enabled a passcode on 16, you have to reset through the settings app/restore with a computer
-    - The device **will not** boot jailbroken if it's enabled
-
-# How to use
-
-## Install pip package (stable)
-
-1. Install palera1n with `pip install -U palera1n`
-2. Run `palera1n`
-3. Follow the on-screen steps carefully
-
-## Install latest (possibly unstable)
-
-1. Install palera1n with `pip install -U git+https://github.com/palera1n/py-rewrite`
-2. Run `palera1n`
-3. Follow the on-screen steps carefully
-
-## Install with Poetry
-
-1. Install Poetry with `pip install poetry`
-2. Clone this repo with `git clone https://github.com/palera1n/py-rewrite && cd py-rewrite`
-3. Install dependencies with `poetry install`
-4. Run `poetry run palera1n`
-5. Follow the on-screen steps carefully
+# Usage
+See the [wiki](https://github.com/palera1n/py-rewrite/wiki).
 
 # Credits
 
