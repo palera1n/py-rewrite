@@ -13,6 +13,7 @@ from urllib3.exceptions import NewConnectionError
 from usb.core import find
 from usb.util import dispose_resources
 from time import sleep
+import os, sys
 
 # local imports
 from . import utils
@@ -147,12 +148,19 @@ class Jailbreak:
         self.data_dir = data_dir
         self.args = args
 
-    def run_checkra1n(self, ramdisk: Path = None, overlay: Path = None, kpf: Path = None, pongo_bin: Path = None, 
+    def run_checkra1n(self, verbose1: bool = True, verbose2: bool = True, ramdisk: Path = None, overlay: Path = None, kpf: Path = None, pongo_bin: Path = None, 
                       boot_args: str = None, force_revert: bool = False, safe_mode: bool = False, 
                       exit_early: bool = False, pongo: bool = False, pongo_full: bool = False) -> None:
         """Run checkra1n."""
 
+        
+
+        
+
         cmd = f'{self.data_dir / "binaries/checkra1n"}'
+        cmd = f'sudo {cmd}'
+        if not "sudo" in cmd:
+            sys.exit('This script is not run as root')
         if ramdisk != None:
             cmd = f'{cmd} -r {ramdisk}'
             
@@ -170,7 +178,13 @@ class Jailbreak:
             
         if force_revert == True:
             cmd = f'{cmd} --force-revert'
-            
+        
+        if verbose1 == True:
+            cmd = f'{cmd} -v'
+
+        if verbose2 == True:
+            cmd = f'{cmd} -V'
+
         if safe_mode == True:
             cmd = f'{cmd} -s'
             
@@ -232,10 +246,13 @@ class Jailbreak:
             dev.set_configuration()
             while sent == False:
                 dev.ctrl_transfer(0x21, 2, 0, 0, 0)
-                dev.ctrl_transfer(0x21, 1, 0, 0, pack('I', len(data)))
+                dev.ctrl_transfer(0x21, 1, 0, 0, len(data))
                 dev.write(2, data, 100000)
                 
+                
+                print(utils.is_linux()) # For debugging purposes 
                 if utils.is_linux():
+                    print(len(data)) # For debugging purposes 
                     if len(data) % 512 == 0:
                         dev.write(2, '')
                 
