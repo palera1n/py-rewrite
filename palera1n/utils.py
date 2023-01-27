@@ -186,25 +186,8 @@ def get_storage_dir() -> Path:
     if pr_home:
         return Path(pr_home)
 
-    # Get path to user's $HOME
-    home = Path.home()
-
-    # Check if OS is Linux
-    # then, use $XDG_DATA_HOME as data directory
-    # otherwise, default to $HOME/.local/share
-    if is_linux():
-        xdg_data = environ.get('XDG_DATA_HOME')
-        if xdg_data:
-            return Path(xdg_data).joinpath('palera1n')
-        return home / '.local/share/palera1n'
-    # Check if OS is macOS
-    # then, use $HOME/.palera1n as data directory
-    elif is_macos():
-        return home / '.palera1n'
-    # Check if OS is Windows
-    # then, use %APPDATA%/palera1n as data directory
-    #elif is_windows():
-    #    return home / 'AppData/Roaming/palera1n'
+    # Otherwise use the appropriate directory for the platform
+    return PlatformDirs('palera1n', appauthor=False).user_data_path
 
 
 def get_version() -> str:
