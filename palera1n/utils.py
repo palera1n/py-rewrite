@@ -218,10 +218,12 @@ def get_resources_dir(package: str) -> Path:
     if version_info < (3, 9):
         with resources.path(package, '__init__.py') as r:
             res = r.parent
+            final = res.joinpath(res, 'data') # Added this line to ensure that the proper paths were being joined
     else:
         res = resources.files(package)
+        final = res.joinpath(res,'data') # Added this line to ensure that the proper paths were being joined
 
-    return res / 'data'
+    return final
 
 
 def get_device_mode() -> str:

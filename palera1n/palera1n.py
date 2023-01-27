@@ -110,7 +110,7 @@ class palera1n:
         pongo = utils.get_resource('Pongo.bin', self.in_package)
         
         sleep(3)
-        self.jb.run_checkra1n(pongo_bin=pongo, exit_early=True, pongo_full=True, 
+        self.jb.run_checkra1n(pongo_bin=pongo, verbose1=True, verbose2=True, exit_early=True, pongo_full=True, 
                               force_revert=True if self.args.restore_rootfs else False, safe_mode=True if self.args.safe_mode else False)
         print('Waiting for Pongo to boot')
         utils.wait('pongo', no_log=True)
